@@ -144,3 +144,12 @@ await Promise.all(
 // Now all files have been uploaded, so we can push to the Redis queue
 publisher.lPush("build-queue", id);
 ```
+
+<!-- ! all this cuz we don't have our domain name -->
+
+To update in dist after build is done
+Add /fcd2d166fac040b6aca85c0df529b5bd or /<id> before keyword
+
+1. INDEX.HTML FILE "/assets/" -> "/fcd2d166fac040b6aca85c0df529b5bd/assets/"
+2. INDEX.HTML FILE "/assets/" -> "/fcd2d166fac040b6aca85c0df529b5bd/assets/"
+3. ASSETS/\*.JS FILE "/assets/" -> "/<id>/assets/"

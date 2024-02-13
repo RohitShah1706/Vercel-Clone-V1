@@ -82,3 +82,65 @@ git commit -m "chore: lint on commitmsg"
    ![alt text](screenshots/user_setup_03.png)
 
 ---
+
+## Initialize an empty typescript project
+
+```bash
+npx tsc --init
+```
+
+Update `tsconfig.json` file configurations:
+
+```json
+{
+	"compilerOptions": {
+		// ...
+		"rootDir": "./src",
+		"outDir": "./dist"
+		// ...
+	}
+}
+```
+
+```bash
+npm i -D ts-node nodemon
+```
+
+Add in `package.json` file the following script to create dev server:
+
+```json
+	"scripts": {
+		"dev": "nodemon --exec ts-node src/index.ts"
+	},
+```
+
+---
+
+## Errors faced
+
+In the below code seems like all files will first be uploaded to the S3 bucket and then the id will be pushed to the redis queue. But the problem is that the `forEach` does not wait for promises. So even though we're using `await` inside `forEach` callback, it only make the callback itself asynchronous, not the `forEach` loop, meaning `console.log` after `uploadFile` will be executed only when that particular file is uploaded to S3, but `publisher.lPush` will be executed immediately after the `forEach` loop is finished.
+
+**Problem**:
+
+```javascript
+files.forEach(async (file) => {
+	await uploadFile(file.slice(__dirname.length + 1), file);
+	// console.log(`File ${file} uploaded to S3`);
+});
+
+// ! put the id on the redis "build-queue" for deploy-service to consume
+publisher.lPush("build-queue", id);
+```
+
+**Solution**:
+
+```javascript
+await Promise.all(
+	files.map((file) => {
+		return uploadFile(file.slice(__dirname.length + 1), file);
+	})
+);
+
+// Now all files have been uploaded, so we can push to the Redis queue
+publisher.lPush("build-queue", id);
+```

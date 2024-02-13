@@ -16,9 +16,8 @@ const s3 = new S3({
 	},
 });
 
-// fileName example => `clonedRepos/${id}/src/App.jsx`
-// filePath example => `D:/Projects/Vercel Clone/upload-service/src/clonedRepos/${id}/src/App.jsx`
-
+// fileName (key to store file on S3) example => `clonedRepos/${id}/src/App.jsx`
+// localFilePath (where to get file from locally) example => `D:/Projects/Vercel Clone/upload-service/src/clonedRepos/${id}/src/App.jsx`
 export const uploadFile = async (fileName: string, localFilePath: string) => {
 	const fileContent = fs.readFileSync(localFilePath);
 

@@ -4,7 +4,7 @@ import simpleGit from "simple-git";
 import path from "path";
 import fs from "fs";
 
-import {getAllFiles} from "./file";
+import {getAllFiles, removeFiles} from "./file";
 import {randomIdGenerator} from "./randomIdGenerator";
 import {uploadFile} from "./aws";
 import {getRedisClient} from "./connection/redis";
@@ -21,6 +21,10 @@ app.post("/upload", async (req, res) => {
 		branch,
 		commitId,
 	}: {repoUrl: string; branch: string; commitId: string} = req.body;
+
+	if (!repoUrl.endsWith(".git")) {
+		repoUrl = repoUrl.concat(".git");
+	}
 
 	if (branch === undefined || branch === null) {
 		branch = "main";
@@ -56,23 +60,37 @@ app.post("/upload", async (req, res) => {
 	// __dirname => D:/Projects/Vercel Clone/upload-service/src
 	// so we use __dirname.length + 1 to remove till the "**src/" part
 	const files = getAllFiles(path.join(__dirname, `clonedRepos/${id}`));
-	files.forEach(async (file) => {
-		await uploadFile(file.slice(__dirname.length + 1), file);
-	});
+
+	await Promise.all(
+		files.map((file) => {
+			return uploadFile(file.slice(__dirname.length + 1), file);
+		})
+	);
+	// Now all files have been uploaded, so we can push to the Redis queue
 
 	// ! put the id on the redis "build-queue" for deploy-service to consume
 	publisher.lPush("build-queue", id);
-	// TODO: kya hai ye hashset
-	// publisher.hSet("status", id, "uploaded");
+
+	// ! users can poll /status/?id to check the status of their build
+	publisher.hSet("status", id, "uploaded");
 
 	// ! remove the cloned repository
-	fs.rmSync(path.join(__dirname, `clonedRepos/${id}`), {
-		recursive: true,
-		force: true,
-	});
+	removeFiles(path.join(__dirname, `clonedRepos/${id}`));
 
 	// ! send the id as response
 	res.status(200).json({id});
+});
+
+app.get("/status", async (req, res) => {
+	const id = req.query.id as string;
+
+	const status = await publisher.hGet("status", id);
+	if (status === null) {
+		res.status(400).json({message: "Invalid ID"});
+		return;
+	}
+
+	res.status(200).json({status});
 });
 
 const PORT = 5000;

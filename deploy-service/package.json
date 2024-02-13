@@ -1,0 +1,21 @@
+{
+	"name": "deploy-service",
+	"version": "1.0.0",
+	"description": "",
+	"main": "index.js",
+	"scripts": {
+		"dev": "nodemon --ignore src/clonedRepos/* --exec ts-node src/index.ts"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"devDependencies": {
+		"nodemon": "^3.0.3",
+		"ts-node": "^10.9.2"
+	},
+	"dependencies": {
+		"aws-sdk": "^2.1555.0",
+		"dotenv": "^16.4.2",
+		"redis": "^4.6.13"
+	}
+}

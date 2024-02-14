@@ -136,7 +136,7 @@ localstack start -d
 pip install awscli-local
 ```
 
-2. Create a new Local AWS Profile (called "localstack") to work with LocalStack
+4. Create a new Local AWS Profile (called "localstack") to work with LocalStack
 
 ```bash
 PS D:\Projects\Vercel Clone> aws configure --profile localstack
@@ -146,7 +146,7 @@ Default region name [None]: ap-south-1
 Default output format [None]:
 ```
 
-3. Check if the profile is created
+5. Check if the profile is created
 
 ```bash
 PS D:\Projects\Vercel Clone> aws configure list --profile localstack
@@ -158,7 +158,7 @@ secret_key     ****************test shared-credentials-file
     region               ap-south-1      config-file    ~/.aws/config
 ```
 
-4. Create S3 bucket ("vercel-clone-s3-bucket") with "localstack" profile using awslocal
+6. Create S3 bucket ("vercel-clone-s3-bucket") with "localstack" profile using awslocal
 
 ```bash
 # awslocal s3api create-bucket --bucket vercel-clone-s3-bucket --profile localstack
@@ -168,7 +168,7 @@ aws s3 mb s3://vercel-clone-s3-bucket --endpoint-url http://localhost:4566 --pro
 aws s3 ls --endpoint-url http://localhost:4566 --profile localstack
 ```
 
-5. List all files inside some bucket/<id> - here <id> comes after "upload-service" uploads the files to S3
+7. List all files inside some bucket/<id> - here <id> comes after "upload-service" uploads the files to S3
 
 ```bash
 aws s3 ls s3://vercel-clone-s3-bucket/clonedRepos/5b2abda7e18543df85f8d84814dda19f --recursive --endpoint-url http://localhost:4566 --profile localstack

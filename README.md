@@ -118,12 +118,14 @@ Add in `package.json` file the following script to create dev server:
 
 ## Setting up AWS S3 bucket locally with LocalStack
 
-References:
+**References**:
 
 1. https://dev.to/navedrizv/setup-aws-s3-bucket-locally-with-localstack-3n4o
 2. https://iamads.medium.com/using-localstack-emulate-aws-s3-and-sqs-with-node-d43dda1d71c0
 
-3. Install and start LocalStack
+**Steps taken**:
+
+1. Install and start LocalStack
 
 ```bash
 # Install LocalStack
@@ -136,7 +138,7 @@ localstack start -d
 pip install awscli-local
 ```
 
-4. Create a new Local AWS Profile (called "localstack") to work with LocalStack
+2. Create a new Local AWS Profile (called "localstack") to work with LocalStack
 
 ```bash
 PS D:\Projects\Vercel Clone> aws configure --profile localstack
@@ -146,7 +148,7 @@ Default region name [None]: ap-south-1
 Default output format [None]:
 ```
 
-5. Check if the profile is created
+3. Check if the profile is created
 
 ```bash
 PS D:\Projects\Vercel Clone> aws configure list --profile localstack
@@ -158,7 +160,7 @@ secret_key     ****************test shared-credentials-file
     region               ap-south-1      config-file    ~/.aws/config
 ```
 
-6. Create S3 bucket ("vercel-clone-s3-bucket") with "localstack" profile using awslocal
+4. Create S3 bucket ("vercel-clone-s3-bucket") with "localstack" profile using awslocal
 
 ```bash
 # awslocal s3api create-bucket --bucket vercel-clone-s3-bucket --profile localstack
@@ -168,7 +170,7 @@ aws s3 mb s3://vercel-clone-s3-bucket --endpoint-url http://localhost:4566 --pro
 aws s3 ls --endpoint-url http://localhost:4566 --profile localstack
 ```
 
-7. List all files inside some bucket/<id> - here <id> comes after "upload-service" uploads the files to S3
+5. List all files inside some bucket/<id> - here <id> comes after "upload-service" uploads the files to S3
 
 ```bash
 aws s3 ls s3://vercel-clone-s3-bucket/clonedRepos/5b2abda7e18543df85f8d84814dda19f --recursive --endpoint-url http://localhost:4566 --profile localstack

@@ -1,10 +1,12 @@
 import {commandOptions} from "redis";
 import path from "path";
 
+import {MONGO_URI} from "./config";
 import {getRedisClient} from "./connection/redis";
 import {copyFinalDistToS3, downloadS3Folder} from "./aws";
 import {buildProject} from "./buildProject";
 import {removeFiles} from "./file";
+import {connectMongo} from "./connection/mongo";
 
 const publisher = getRedisClient();
 const subscriber = getRedisClient();
@@ -20,7 +22,6 @@ const consumeDeployTask = async () => {
 		const id = response?.element;
 
 		if (id === undefined || id === null) {
-			// TODO: check if we can remove this task from "build-queue"
 			continue;
 		}
 
@@ -43,6 +44,8 @@ const run = async () => {
 	await publisher.connect();
 	await subscriber.connect();
 	console.log("Connected to Redis Queue");
+	await connectMongo(MONGO_URI);
+	console.log("Connected to MongoDB");
 	consumeDeployTask();
 };
 

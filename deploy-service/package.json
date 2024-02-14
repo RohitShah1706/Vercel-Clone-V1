@@ -16,6 +16,7 @@
 	"dependencies": {
 		"aws-sdk": "^2.1555.0",
 		"dotenv": "^16.4.2",
+		"mongoose": "^8.1.2",
 		"redis": "^4.6.13"
 	}
 }

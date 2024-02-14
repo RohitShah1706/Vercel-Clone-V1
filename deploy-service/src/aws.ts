@@ -11,6 +11,8 @@ import {
 import {getAllFiles} from "./file";
 
 const s3 = new S3({
+	endpoint: `http://localhost:4566`, // ! required for localstack
+	s3ForcePathStyle: true, // ! required for localstack
 	region: AWS_S3_BUCKET_REGION,
 	credentials: {
 		accessKeyId: AWS_EXPRESSAPP_USER_ACCESS_KEY,

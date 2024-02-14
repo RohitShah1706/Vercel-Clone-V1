@@ -3,9 +3,39 @@ import fs from "fs";
 import path from "path";
 
 import {getAllFiles} from "./file";
+import {getEnvVars} from "./controllers/envVars";
+import {decrypt} from "./cryptoUtils";
 
-export const buildProject = (id: string) => {
+export const buildProject = async (id: string) => {
 	console.log(`Building project ${id}`);
+
+	// ! download envVars if any from mongodb
+	try {
+		const envVarsEncryptedString = await getEnvVars(id);
+		if (envVarsEncryptedString === null) {
+			console.log(`No envVars found for id: ${id}`);
+		} else {
+			// ! decrypt and save to .env file inside the cloned repository
+			const envVarsString = decrypt(envVarsEncryptedString);
+			const envVars = JSON.parse(envVarsString);
+
+			// since envVars is a json object we need to convert it to .env format
+			let envVarsFormatted = "";
+			for (const key in envVars) {
+				envVarsFormatted += `${key}=${envVars[key]}\n`;
+			}
+
+			fs.writeFileSync(
+				path.join(__dirname, `clonedRepos/${id}/.env`),
+				envVarsFormatted
+			);
+
+			console.log(`envVars saved for id: ${id}`);
+		}
+	} catch (error) {
+		console.log(`Error getting envVars for id: ${id}`, error);
+	}
+
 	// TODO: use docker for this step
 	return new Promise((resolve) => {
 		// __dirname = `D:/Projects/Vercel Clone/deploy-service/src/`

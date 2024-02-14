@@ -1,3 +1,4 @@
 node_modules
 .env
 tmp
+s3_docker_data

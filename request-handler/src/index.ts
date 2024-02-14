@@ -6,7 +6,6 @@ import {getFileType} from "./file";
 const app = express();
 
 app.get("/404/*", async (req, res) => {
-	console.log("hit 404");
 	const filePath = (req.params as {[key: string]: string})["0"];
 	console.log("filePath", filePath);
 	const Key = `404/${filePath}`;

@@ -1,40 +1,30 @@
-import {S3} from "aws-sdk";
+import {
+	PutObjectCommand,
+	paginateListObjectsV2,
+	_Object,
+} from "@aws-sdk/client-s3";
+import mime from "mime-types";
 import fs from "fs";
 import path from "path";
 
-import {
-	AWS_S3_BUCKET_NAME,
-	AWS_S3_BUCKET_REGION,
-	AWS_EXPRESSAPP_USER_ACCESS_KEY,
-	AWS_EXPRESSAPP_USER_SECRET_ACCESS_KEY,
-} from "./config";
+import {s3Client} from "./connection/s3";
+import {AWS_S3_BUCKET_NAME} from "./config";
 import {getAllFiles} from "./file";
-
-const s3 = new S3({
-	endpoint: `http://localhost:4566`, // ! required for localstack
-	s3ForcePathStyle: true, // ! required for localstack
-	region: AWS_S3_BUCKET_REGION,
-	credentials: {
-		accessKeyId: AWS_EXPRESSAPP_USER_ACCESS_KEY,
-		secretAccessKey: AWS_EXPRESSAPP_USER_SECRET_ACCESS_KEY,
-	},
-});
+import {downloadInChunks} from "./downloadInChunks";
 
 const uploadFile = async (fileName: string, localFilePath: string) => {
 	// fileName = `dist/${id}` + `assets/index-51d1aabc.js`
-	// localFilePath
-	const fileContent = fs.readFileSync(localFilePath);
 
-	const response = await s3
-		.upload({
-			Body: fileContent,
-			Bucket: AWS_S3_BUCKET_NAME,
-			// ! NOTE: fileName will be the key of the object in the bucket & has to be unique
-			// ! since we have ${id} in the fileName it will be unique
-			Key: fileName,
-		})
-		.promise();
+	const fileStream = fs.createReadStream(localFilePath);
 
+	const command = new PutObjectCommand({
+		Bucket: AWS_S3_BUCKET_NAME,
+		Key: fileName,
+		Body: fileStream,
+		ContentType: mime.lookup(localFilePath) || "application/octet-stream",
+	});
+
+	const response = await s3Client.send(command);
 	// console.log(response);
 };
 
@@ -60,18 +50,33 @@ export const copyFinalDistToS3 = async (id: string) => {
 };
 
 export const downloadS3Folder = async (prefix: string) => {
-	const allFiles = await s3
-		.listObjectsV2({
-			Bucket: AWS_S3_BUCKET_NAME,
-			Prefix: prefix,
-		})
-		.promise();
+	const commandInput = {
+		Bucket: AWS_S3_BUCKET_NAME,
+		Prefix: prefix,
+	};
 
-	// console.log(allFiles);
+	const paginatorConfig = {
+		client: s3Client,
+		pageSize: 1000,
+		startingToken: null,
+	};
+
+	const paginator = paginateListObjectsV2(paginatorConfig, commandInput);
+
+	let allFiles: string[] = [];
+	// let allFiles: _Object[] = [];
+
+	for await (const page of paginator) {
+		for (const object of page.Contents || []) {
+			if (object.Key) {
+				allFiles.push(object.Key);
+			}
+		}
+	}
 
 	const allPromises =
 		// ! map will create an array of promises
-		allFiles.Contents?.map(async ({Key}) => {
+		allFiles.map(async (Key) => {
 			return new Promise(async (resolve) => {
 				if (!Key) {
 					resolve("");
@@ -90,16 +95,13 @@ export const downloadS3Folder = async (prefix: string) => {
 					fs.mkdirSync(dirName, {recursive: true});
 				}
 
-				const outputFileWriteStream = fs.createWriteStream(finalOutputPath);
-				s3.getObject({
-					Bucket: AWS_S3_BUCKET_NAME,
-					Key,
-				})
-					.createReadStream()
-					.pipe(outputFileWriteStream)
-					.on("finish", () => {
-						resolve("");
-					});
+				downloadInChunks({
+					bucket: AWS_S3_BUCKET_NAME,
+					key: Key,
+					localFilePath: finalOutputPath,
+				}).then(() => {
+					resolve("");
+				});
 			});
 		}) || [];
 

@@ -4,7 +4,7 @@ import simpleGit from "simple-git";
 import path from "path";
 
 import {REDIS_HOST, REDIS_PASSWORD, REDIS_PORT, MONGO_URI} from "./config";
-import {getAllFiles, removeFiles} from "./file";
+import {getAllFiles, removeFolder} from "./file";
 import {randomIdGenerator} from "./randomIdGenerator";
 import {uploadFile} from "./aws";
 import {getRedisClient} from "./connection/redis";
@@ -88,7 +88,7 @@ app.post("/upload", async (req, res) => {
 			})
 		);
 	} catch (error) {
-		removeFiles(path.join(__dirname, `clonedRepos/${id}`));
+		removeFolder(path.join(__dirname, `clonedRepos/${id}`));
 		res.status(500).json({message: "Error uploading files"});
 		return;
 	}
@@ -100,7 +100,7 @@ app.post("/upload", async (req, res) => {
 	publisher.hSet("status", id, "uploaded");
 
 	// ! remove the cloned repository
-	removeFiles(path.join(__dirname, `clonedRepos/${id}`));
+	removeFolder(path.join(__dirname, `clonedRepos/${id}`));
 
 	// ! send the id as response
 	res.status(200).json({id});

@@ -1,62 +1,63 @@
 import express from "express";
+import httpProxy from "http-proxy";
 
-import {getObject} from "./aws";
-import {getFileType} from "./file";
+import {AWS_S3_BUCKET_NAME} from "./config";
 
+const proxy = httpProxy.createProxy();
 const app = express();
 
+const BASE_PATH = `http://localhost:4566/${AWS_S3_BUCKET_NAME}`;
+
 app.get("/404/*", async (req, res) => {
-	const filePath = (req.params as {[key: string]: string})["0"];
-	console.log("filePath", filePath);
-	const Key = `404/${filePath}`;
+	const Key = "";
 
-	const contents = await getObject(Key);
-	if (contents === null) {
-		res.status(404).send("Not found");
-		return;
-	}
+	const resolvesTo = `${BASE_PATH}/${Key}`;
+	// console.log(`Key ${Key} resolves to ${resolvesTo}`);
 
-	const type = getFileType(filePath);
-
-	// ! do this so in browser we don't download file when we request but instead tell browser to render it
-	res.setHeader("Content-Type", type);
-	res.send(contents);
+	return proxy.web(req, res, {
+		target: resolvesTo,
+		changeOrigin: true,
+	});
 });
 
 app.get("/:id/*", async (req, res) => {
-	// ! NOTE: idea here it to capture "id" of build from subdomain
-	// Example: `https://<id>.vercel-clone.com` - so host will be `<id>.vercel-clone.com`
-	// const id = req.hostname.split(".")[0];
-	// const filePath = req.path;
-	// const Key = `dist/${id}${filePath}`;
-	// since, we don't have access to a domain, we can't create subdomains
-	// so for now we will extract "id" from /:id
-	// ! NOTE: if we follow subdomain method app.get("/:id/*") changes to app.get("/*")
-
 	const id = req.params.id;
-	const filePath = (req.params as {[key: string]: string})["0"];
-	const Key = `dist/${id}/${filePath}`;
+	const Key = "dist";
 
-	const contents = await getObject(Key);
-	const type = getFileType(filePath);
+	const resolvesTo = `${BASE_PATH}/${Key}`;
+	// console.log(`Key ${Key} resolves to ${resolvesTo}`);
 
-	if (contents === null) {
-		if (type === "text/html") {
-			res.redirect("/404/index.html");
-			return;
-		}
-
-		res.status(404).send("Not found");
-		return;
-	}
-
-	// ! do this so in browser we don't download file when we request but instead tell browser to render it
-	res.setHeader("Content-Type", type);
-	res.send(contents);
+	return proxy.web(req, res, {
+		target: resolvesTo,
+		changeOrigin: true,
+	});
 });
 
 app.get("/*", (req, res) => {
-	res.redirect("/404/index.html");
+	res.redirect("/404/");
+});
+
+// ! event emitted just before proxying request to target server
+proxy.on("proxyReq", (proxyReq, req, res) => {
+	const url = req.url;
+
+	if (url?.split("/")[2] === "") {
+		// ! users could also request at /<id>/ instead of /<id>/index.html
+		proxyReq.path += "index.html";
+	}
+
+	// console.log("proxying request to:", `${proxyReq.path}`);
+});
+
+// ! event emitted just before proxying response to client
+proxy.on("proxyRes", (proxyRes, req, res) => {
+	if (proxyRes.statusCode === 404) {
+		// ! 302 - Redirect
+		res.writeHead(302, {
+			location: "/404/",
+		});
+		res.end();
+	}
 });
 
 const PORT = 8080;

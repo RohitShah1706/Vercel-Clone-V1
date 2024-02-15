@@ -20,9 +20,6 @@ export const getAllFiles = (folderPath: string) => {
 	return response;
 };
 
-export const removeFiles = (folderPath: string) => {
-	fs.rmSync(folderPath, {
-		recursive: true,
-		force: true,
-	});
+export const removeFolder = (folderPath: string) => {
+	fs.rmSync(folderPath, {recursive: true, force: true});
 };

@@ -120,8 +120,8 @@ Add in `package.json` file the following script to create dev server:
 
 **References**:
 
-1. https://dev.to/navedrizv/setup-aws-s3-bucket-locally-with-localstack-3n4o
-2. https://iamads.medium.com/using-localstack-emulate-aws-s3-and-sqs-with-node-d43dda1d71c0
+1. [Setup AWS S3 bucket locally with LocalStack](https://dev.to/navedrizv/setup-aws-s3-bucket-locally-with-localstack-3n4o)
+2. [Using Localstack to Emulate AWS S3 and SQS With Node](https://iamads.medium.com/using-localstack-emulate-aws-s3-and-sqs-with-node-d43dda1d71c0)
 
 **Steps taken**:
 
@@ -218,6 +218,20 @@ Add /fcd2d166fac040b6aca85c0df529b5bd or /<id> before keyword
 2. INDEX.HTML FILE "/assets/" -> "/fcd2d166fac040b6aca85c0df529b5bd/assets/"
 3. ASSETS/\*.JS FILE "/assets/" -> "/<id>/assets/"
 
+### Downloading files from S3 in Chunks
+
+**Reference**: [Upload or download large files to and from Amazon S3 using an AWS SDK](https://docs.aws.amazon.com/AmazonS3/latest/userguide/example_s3_Scenario_UsingLargeFiles_section.html)
+
+Breaking down a large file into smaller pieces, or _chunking_, has several benefits:
+
+1. **Improved reliability**: If a download fails, we only need to retry the failed chunk, not the entire file.
+
+2. **Parallel downloads**: We can download multiple chunks simultaneously, which can significantly speed up the download process if we have a high-bandwidth connection.
+
+3. **Lower memory usage**: When downloading a file in one piece, the entire file needs to be held in memory, which can be a problem for large files. By downloading in chunks, we only need to hold one chunk in memory at a time.
+
+**NOTE**: Checkout `deploy-service/src/downloadInChunks.ts` for implementation.
+
 ---
 
 ## Todos
@@ -265,4 +279,14 @@ Those files include:
 - `src/cryptoUtis.ts`
 - `src/file.ts`
 
-### Shift to latest AWS SDK
+### Check if current code works with existing builds in AWS S3
+
+### Update S3 bucket polices to only allow GET requests from public
+
+### Check below
+
+If your S3 bucket is private, you would need to generate a signed URL for each file that the client requests. A signed URL includes a signature and AWS credentials, and it grants temporary access to a private file. You can generate signed URLs using the AWS SDK.
+
+However, please note that if you're serving static website content from an S3 bucket, it's common to make the bucket public and use a CDN like CloudFront to manage access and caching. This can be more efficient and secure than generating a signed URL for each request.
+
+### Setup Global CDN with AWS CloudFront for static content serving via S3 bucket to start caching at edge locations and reduce latency

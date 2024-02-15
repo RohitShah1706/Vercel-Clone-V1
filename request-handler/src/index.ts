@@ -1,12 +1,12 @@
 import express from "express";
 import httpProxy from "http-proxy";
 
-import {AWS_S3_BUCKET_NAME} from "./config";
+import {AWS_S3_BASE_URL, AWS_S3_BUCKET_NAME} from "./config";
 
 const proxy = httpProxy.createProxy();
 const app = express();
 
-const BASE_PATH = `http://localhost:4566/${AWS_S3_BUCKET_NAME}`;
+const BASE_PATH = `${AWS_S3_BASE_URL}`;
 
 app.get("/404/*", async (req, res) => {
 	const Key = "";

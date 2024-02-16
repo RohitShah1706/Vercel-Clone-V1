@@ -158,6 +158,8 @@ AWS_S3_BASE_URL=https://d5lj04npxpnla.cloudfront.net
 
 ## Performance comparison of serving files from S3 bucket v/s from CloudFront
 
+**Reference**: [KeyCDN for Performance testing](https://tools.keycdn.com/performance)
+
 **TTFB**: time to first byte, the time between the client making a request and the server responding
 
 **S3 Performance**:  

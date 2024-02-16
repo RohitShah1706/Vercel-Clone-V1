@@ -46,7 +46,7 @@ proxy.on("proxyReq", (proxyReq, req, res) => {
 		proxyReq.path += "index.html";
 	}
 
-	// console.log("proxying request to:", `${proxyReq.path}`);
+	// console.log("proxying request to:", `${BASE_PATH}${proxyReq.path}`);
 });
 
 // ! event emitted just before proxying response to client

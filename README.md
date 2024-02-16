@@ -37,6 +37,37 @@ git commit -m "chore: lint on commitmsg"
 
 ---
 
+## Initialize an empty typescript project
+
+```bash
+npx tsc --init
+```
+
+Update `tsconfig.json` file configurations:
+
+```json
+{
+	"compilerOptions": {
+		"rootDir": "./src",
+		"outDir": "./dist"
+	}
+}
+```
+
+```bash
+npm i -D ts-node nodemon
+```
+
+Add in `package.json` file the following script to create dev server:
+
+```json
+	"scripts": {
+		"dev": "nodemon --exec ts-node src/index.ts"
+	},
+```
+
+---
+
 ## Setting up AWS S3 bucket for file uploading
 
 1. Create S3 bucket & Extract the `bucket name` and `region`
@@ -84,36 +115,56 @@ git commit -m "chore: lint on commitmsg"
 
 ---
 
-## Initialize an empty typescript project
+## Setting up AWS CloudFront for CDN with S3 as origin
 
-```bash
-npx tsc --init
+1. Create S3 bucket and disable public access since we want to serve files via CloudFront only.
+
+2. Create CloudFront distribution with S3 bucket as origin.
+
+   ![alt text](screenshots/cloudfront_setup_01.png)
+
+3. Since our S3 bucket is private, we need to create an `OAC` (Origin Access Control) to allow only CloudFront to access the S3 bucket.
+
+   ![alt text](screenshots/cloudfront_setup_02.png)
+   ![alt text](screenshots/cloudfront_setup_04.png)
+
+4. Copy the OCA that is generated and paste it in the S3 bucket policy.
+
+   ![alt text](screenshots/cloudfront_setup_05.png)
+
+5. Copy the CloudFront domain name and use it to access the files in the S3 bucket instead of the S3 bucket URL.
+
+   ![alt text](screenshots/cloudfront_setup_06.png)
+
+**NOTE**: The endpoint URL to access files will now change:
+
+```env
+# old endpoint URL
+AWS_S3_BASE_URL=https://vercel-clone-s3-bucket.s3.ap-south-1.amazonaws.com
+
+# new endpoint URL
+AWS_S3_BASE_URL=https://d5lj04npxpnla.cloudfront.net
 ```
 
-Update `tsconfig.json` file configurations:
+**Benefits of using CloudFront**:
 
-```json
-{
-	"compilerOptions": {
-		// ...
-		"rootDir": "./src",
-		"outDir": "./dist"
-		// ...
-	}
-}
-```
+1. **Improved Performance**: It caches content at edge locations around the world, reducing the distance to the end user and improving load times.
 
-```bash
-npm i -D ts-node nodemon
-```
+2. **Scalability**: CloudFront can handle traffic spikes and high load times without requiring manual intervention, making it easier to scale your application.
 
-Add in `package.json` file the following script to create dev server:
+3. **Security**: CloudFront provides several security features, including AWS Shield for DDoS protection, AWS WAF for protecting against common web exploits, and field-level encryption for sensitive data.
 
-```json
-	"scripts": {
-		"dev": "nodemon --exec ts-node src/index.ts"
-	},
-```
+---
+
+## Performance comparison of serving files from S3 bucket v/s from CloudFront
+
+**TTFB**: time to first byte, the time between the client making a request and the server responding
+
+**S3 Performance**:  
+![alt text](screenshots/performance_test_s3.png)
+
+**CloudFront Performance**:
+![alt text](screenshots/performance_test_cloudfront.png)
 
 ---
 

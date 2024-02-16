@@ -63,12 +63,13 @@ git commit -m "chore: lint on commitmsg"
 	"Version": "2012-10-17",
 	"Statement": [
 		{
-			"Sid": "Statement1",
+			"Sid": "AllowWebAccess",
 			"Effect": "Allow",
-			"Action": ["s3:*"],
+			"Principal": "*",
+			"Action": "s3:GetObject",
 			"Resource": [
-				"arn:aws:s3:::vercel-clone-s3-bucket",
-				"arn:aws:s3:::vercel-clone-s3-bucket/*"
+				"arn:aws:s3:::vercel-clone-s3-bucket/dist/*",
+				"arn:aws:s3:::vercel-clone-s3-bucket/404/*"
 			]
 		}
 	]

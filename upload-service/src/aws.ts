@@ -14,6 +14,7 @@ export const uploadFile = async (fileName: string, localFilePath: string) => {
 		Bucket: AWS_S3_BUCKET_NAME,
 		Key: fileName,
 		Body: fileStream,
+		// ! VIMP: if contentType is not set, then file will be downloaded instead of opening in browser
 		ContentType: mime.lookup(localFilePath) || "application/octet-stream",
 	});
 

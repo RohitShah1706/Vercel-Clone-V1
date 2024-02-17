@@ -76,8 +76,9 @@ const _downloadInChunks = async ({
 
 		writeStream.write(await Body?.transformToByteArray());
 		rangeAndLength = getRangeAndLength(ContentRange);
-		writeStream.end();
 	}
+	
+	writeStream.end();
 };
 
 export const downloadInChunks = async ({

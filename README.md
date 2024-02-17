@@ -217,7 +217,8 @@ secret_key     ****************test shared-credentials-file
 4. Create S3 bucket ("vercel-clone-s3-bucket") with "localstack" profile using awslocal
 
 ```bash
-# awslocal s3api create-bucket --bucket vercel-clone-s3-bucket --profile localstack
+# awslocal s3api create-bucket --bucket vercel-clone-s3-bucket --
+profile localstack
 aws s3 mb s3://vercel-clone-s3-bucket --endpoint-url http://localhost:4566 --profile localstack
 
 # List all buckets
@@ -229,6 +230,66 @@ aws s3 ls --endpoint-url http://localhost:4566 --profile localstack
 ```bash
 aws s3 ls s3://vercel-clone-s3-bucket/clonedRepos/5b2abda7e18543df85f8d84814dda19f --recursive --endpoint-url http://localhost:4566 --profile localstack
 ```
+
+---
+
+## Setup OAuth2.0 for github login using NextAuth.js
+
+**References**:
+
+1. [Next-Auth on App Router - Solid Auth, Super Fast](https://www.youtube.com/watch?v=md65iBX5Gxg)
+2. [NextAuth.js - Authentication for Next.js](https://next-auth.js.org/)
+
+**Steps taken**:
+
+1. Navigate to [GitHub Developer Settings](https://github.com/settings/developers) and create a new OAuth app.
+
+   ![alt text](screenshots/oauth_setup_01.png)
+
+2. Note that `Authorization callback URL` is `http://localhost:3000/api/auth/callback/github` which is the default callback URL for NextAuth.js. Checkout `frontend/app/api/auth/[...nextauth]/route.js` & `frontend/app/pages/api/auth/[...nextauth]/options.js` where we register our Github OAuth provider.
+
+3. Get the `CLIENT_ID` and `CLIENT_SECRET` variables.
+
+   ![alt text](oauth_setup_02.png)
+
+**NOTE**: By default NextAuth.js only asks for `user:email` scope. But we want to generate an `access_token` to also access private repositories in `upload-service`. So we override the default scope in `options.js` file.
+
+```javascript
+import GitHubProvider from "next-auth/providers/github";
+
+export const options = {
+	providers: [
+		GitHubProvider({
+			clientId: process.env.GITHUB_CLIENT_ID,
+			clientSecret: process.env.GITHUB_CLIENT_SECRET,
+			// ! IMP: used to set the scope of the access token
+			// ! below will provide complete access to all repos
+			authorization: {
+				params: {
+					scope: "repo user",
+				},
+			},
+		}),
+	],
+	session: {
+		// ! IMP: session data is stored directly in a JWT token
+		strategy: "jwt",
+		maxAge: 60 * 60 * 1, // ! one hour
+	},
+	callbacks: {
+		jwt: async ({token, user, account}) => {
+			if (account && account.access_token) {
+				token.accessToken = account.access_token;
+			}
+			return token;
+		},
+	},
+};
+```
+
+**NOTE**: By default, NextAuth.js won't provide the `access_token` in the `session` object. So we have to manually add it in the `jwt` callback. Now, we can extract the `access_token` from the `session` object in the frontend and send it to the backend (`upload-service`) to access private repositories.
+
+---
 
 ## Errors faced
 
@@ -333,10 +394,8 @@ Those files include:
 - `src/cryptoUtis.ts`
 - `src/file.ts`
 
-### Setup OAuth2.0 for github login using NextAuth.js
-
-[Next-Auth on App Router - Solid Auth, Super Fast](https://www.youtube.com/watch?v=md65iBX5Gxg)
-
-TODO: document steps for this
-TODO: add oauth_trial/backend/backend-middleware-plus-fetch-private-repos.js to upload-service
-TODO: check how safe it is to send auth token to the backend & if yes, then how to do it
+TODO: shift to RabbitMQ for publishing tasks
+TODO: use redis only as caching layer: remove publish tasks & status onto queue
+TODO: add getOrSetCache function & use redis as caching: for /status of "upload-server"
+TODO: use socketio to stream build logs from "upload-service"
+TODO: create frontend basic template

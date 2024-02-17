@@ -17,14 +17,11 @@ export async function GET(req, res) {
 	}
 
 	// fetch list of all private repos from backend
-	const response = await fetch(
-		`${process.env.BACKEND_BASE_URL}/private-repos`,
-		{
-			headers: {
-				Authorization: `Bearer ${token.accessToken}`,
-			},
-		}
-	);
+	const response = await fetch(`${process.env.BACKEND_BASE_URL}/repos`, {
+		headers: {
+			Authorization: `Bearer ${token.accessToken}`,
+		},
+	});
 
 	try {
 		if (response.ok) {

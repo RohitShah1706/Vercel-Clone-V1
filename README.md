@@ -333,14 +333,10 @@ Those files include:
 - `src/cryptoUtis.ts`
 - `src/file.ts`
 
-### Check if current code works with existing builds in AWS S3
+### Setup OAuth2.0 for github login using NextAuth.js
 
-### Update S3 bucket polices to only allow GET requests from public
+[Next-Auth on App Router - Solid Auth, Super Fast](https://www.youtube.com/watch?v=md65iBX5Gxg)
 
-### Check below
-
-If your S3 bucket is private, you would need to generate a signed URL for each file that the client requests. A signed URL includes a signature and AWS credentials, and it grants temporary access to a private file. You can generate signed URLs using the AWS SDK.
-
-However, please note that if you're serving static website content from an S3 bucket, it's common to make the bucket public and use a CDN like CloudFront to manage access and caching. This can be more efficient and secure than generating a signed URL for each request.
-
-### Setup Global CDN with AWS CloudFront for static content serving via S3 bucket to start caching at edge locations and reduce latency
+TODO: document steps for this
+TODO: add oauth_trial/backend/backend-middleware-plus-fetch-private-repos.js to upload-service
+TODO: check how safe it is to send auth token to the backend & if yes, then how to do it

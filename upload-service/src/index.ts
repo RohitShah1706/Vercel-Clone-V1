@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import simpleGit from "simple-git";
 import {Octokit} from "@octokit/rest";
+import {z} from "zod";
 import path from "path";
 
 import {REDIS_HOST, REDIS_PASSWORD, REDIS_PORT, MONGO_URI} from "./config";
@@ -30,17 +31,22 @@ app.use(cors());
 app.use(express.json());
 
 app.get("/repos", authenticateGithub, async (req, res) => {
-	let visibility = req.query.visibility as string;
-	if (!visibility) {
-		visibility = "all";
+	const VisibilityEnum = z.enum(["all", "private", "public"]);
+
+	const parsed = VisibilityEnum.safeParse(req.query.visibility);
+	if (!parsed.success) {
+		return res.status(400).json({
+			error: {
+				visibility:
+					"Invalid value. Expected one of ['all', 'private', 'public']",
+			},
+		});
 	}
 
-	if (!["all", "private", "public"].includes(visibility)) {
-		visibility = "all";
-	}
+	let visibility = parsed.data;
 
 	const octokit = new Octokit({auth: req.accessToken});
-	console.log("Fetching repositories with visibility:", visibility);
+	// console.log("Fetching repositories with visibility:", visibility);
 	try {
 		let page = 1;
 		let fetchMore = true;
@@ -88,16 +94,20 @@ app.get("/repos", authenticateGithub, async (req, res) => {
 });
 
 app.post("/upload", authenticateGithub, async (req, res) => {
-	var {
-		full_name,
-		branch,
-		commitId,
-	}: {full_name: string; branch: string; commitId: string} = req.body;
-	const {
-		envVars,
-	}: {
-		envVars: {[key: string]: string};
-	} = req.body;
+	const UploadRequestBody = z.object({
+		full_name: z.string().min(1),
+		branch: z.string().optional(),
+		commitId: z.string().length(40).optional(),
+		envVars: z.record(z.string()).optional(),
+	});
+
+	const parsed = UploadRequestBody.safeParse(req.body);
+
+	if (!parsed.success) {
+		return res.status(400).json({errors: parsed.error.formErrors.fieldErrors});
+	}
+
+	var {full_name, branch, commitId, envVars} = parsed.data;
 
 	const id = randomIdGenerator();
 
@@ -178,7 +188,17 @@ app.post("/upload", authenticateGithub, async (req, res) => {
 });
 
 app.get("/status", async (req, res) => {
-	const id = req.query.id as string;
+	const StatusRequestQuery = z.object({
+		id: z.string(),
+	});
+
+	const parsed = StatusRequestQuery.safeParse(req.query);
+
+	if (!parsed.success) {
+		return res.status(400).json({errors: parsed.error.formErrors.fieldErrors});
+	}
+
+	const {id} = parsed.data;
 
 	const status = await publisher.hGet("status", id);
 	if (status === null) {

@@ -394,8 +394,13 @@ Those files include:
 - `src/cryptoUtis.ts`
 - `src/file.ts`
 
+TODO: shift to postgresql & primsa for database
 TODO: shift to RabbitMQ for publishing tasks
 TODO: use redis only as caching layer: remove publish tasks & status onto queue
 TODO: add getOrSetCache function & use redis as caching: for /status of "upload-server"
-TODO: use socketio to stream build logs from "upload-service"
+TODO: use kafka to stream build logs from "deploy-service"
+TODO: create "kafka-consumer" service to consume build logs from "deploy-service" & push to clickhouse
+TODO: can use postgresql for storing build logs but clickhouse is faster
+TODO: use clickhouse - fast open-source OLAP database management system for real-time push of build logs from "deploy-service"
+TODO: use polling on frontend to get build logs from "upload-service" (which will get from clickhouse) & display in real-time
 TODO: create frontend basic template

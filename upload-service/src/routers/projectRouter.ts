@@ -1,5 +1,4 @@
 import {Router} from "express";
-import {Prisma} from "@prisma/client";
 import {z} from "zod";
 
 import {prismaClient} from "../connection/prisma";

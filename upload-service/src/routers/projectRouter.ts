@@ -3,7 +3,8 @@ import {z} from "zod";
 
 import {prismaClient} from "../connection/prisma";
 import {authenticateGithub} from "../middlewares";
-import {toTypedPrismaError} from "../prismaErrorMap";
+import {toTypedPrismaError} from "../utils/prismaErrorMap";
+import {encrypt} from "../utils/cryptoUtils";
 
 const router = Router();
 
@@ -48,6 +49,7 @@ router.post("/", authenticateGithub, async (req, res) => {
 		outDir: z.string().optional(),
 		installCmd: z.string().optional(),
 		buildCmd: z.string().optional(),
+		envVars: z.record(z.string()).optional(),
 	});
 	const parsed = CreateProjectRequestBody.safeParse(req.body);
 
@@ -55,10 +57,32 @@ router.post("/", authenticateGithub, async (req, res) => {
 		return res.status(400).json({errors: parsed.error.formErrors.fieldErrors});
 	}
 
-	const {name, githubProjectName, rootDir, outDir, installCmd, buildCmd} =
-		parsed.data;
+	const {
+		name,
+		githubProjectName,
+		rootDir,
+		outDir,
+		installCmd,
+		buildCmd,
+		envVars,
+	} = parsed.data;
 
 	const emailId = res.locals.emailId as string;
+	var envVarList: {
+		key: string;
+		encryptedValue: string;
+	}[] = [];
+
+	if (envVars !== undefined && envVars !== null) {
+		Object.entries(envVars).forEach(([key, value]) => {
+			envVarList.push({
+				key,
+				encryptedValue: encrypt(value),
+			});
+		});
+	}
+	// console.log(envVarList);
+	// res.status(200).json({message: "hehe"});
 
 	try {
 		const project = await prismaClient.project.create({
@@ -70,6 +94,11 @@ router.post("/", authenticateGithub, async (req, res) => {
 				outDir,
 				installCmd,
 				buildCmd,
+				envVars: {
+					createMany: {
+						data: envVarList,
+					},
+				},
 			},
 			select: {
 				id: true,
@@ -78,6 +107,11 @@ router.post("/", authenticateGithub, async (req, res) => {
 				user: {
 					select: {
 						email: true,
+					},
+				},
+				envVars: {
+					select: {
+						key: true,
 					},
 				},
 				rootDir: true,

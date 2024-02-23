@@ -409,7 +409,7 @@ Those files include:
 - `src/file.ts`
 
 TODO: remove all unused imports for each service
-TODO: create middleware as current middleware allow access to anybody's projects if you have a valid github access token
+TODO: shift all utilsFunctions to utils folder
 TODO: shift to postgresql & primsa for database
 TODO: see how to create hooks using Octokit
 TODO: use prisma studio to visualize database in the browser

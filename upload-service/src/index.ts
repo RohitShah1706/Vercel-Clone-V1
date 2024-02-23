@@ -36,9 +36,8 @@ app.post("/decrypt", async (req, res) => {
 	} = req.body;
 
 	try {
-		const decrypted = decrypt(encryptedString);
-		const jsonDecrypted = JSON.parse(decrypted);
-		res.status(200).json(jsonDecrypted);
+		const decryptedString = decrypt(encryptedString);
+		res.status(200).json({decryptedString});
 	} catch (error) {
 		res.status(400).json({message: "Invalid encrypted string"});
 	}

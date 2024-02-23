@@ -8,8 +8,7 @@ import {RedisClientType} from "redis";
 
 import {prismaClient} from "../connection/prisma";
 import {authenticateGithub} from "../middlewares";
-import {toTypedPrismaError} from "../prismaErrorMap";
-import {randomIdGenerator} from "../randomIdGenerator";
+import {toTypedPrismaError} from "../utils/prismaErrorMap";
 import {encrypt} from "../utils/cryptoUtils";
 
 module.exports.default = (publisher: RedisClientType) => {
@@ -20,7 +19,6 @@ module.exports.default = (publisher: RedisClientType) => {
 			projectId: z.string().min(1),
 			branch: z.string().optional(),
 			commitId: z.string().length(40).optional(),
-			envVars: z.record(z.string()).optional(),
 		});
 
 		const parsed = UploadRequestBody.safeParse(req.body);
@@ -35,7 +33,7 @@ module.exports.default = (publisher: RedisClientType) => {
 		const emailId = res.locals.emailId;
 		const accessToken = res.locals.accessToken;
 
-		var {branch, commitId, envVars} = parsed.data;
+		var {branch, commitId} = parsed.data;
 		var githubProjectName: string;
 
 		try {
@@ -88,21 +86,6 @@ module.exports.default = (publisher: RedisClientType) => {
 				},
 			});
 			const deploymentId = deployment.id;
-
-			if (envVars !== undefined && envVars !== null) {
-				// ! convert envVars to json string
-				const envVarsString = JSON.stringify(envVars);
-				const encryptedEnvVars = encrypt(envVarsString);
-
-				// ! save the encrypted string in the database
-				// TODO: save this in postgres database
-				// try {
-				// 	await saveEnvVars(id, encryptedEnvVars);
-				// } catch (error) {
-				// 	res.status(500).json({message: "Error saving env vars"});
-				// 	return;
-				// }
-			}
 
 			if (branch === undefined || branch === null) {
 				branch = "main";

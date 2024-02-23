@@ -31,9 +31,8 @@ model Project {
   outDir            String       @default("dist") @map("out_dir")
   installCmd        String       @default("npm install") @map("install_cmd")
   buildCmd          String       @default("npm run build") @map("build_cmd")
-  Deployment        Deployment[]
-
-  // TODO: add envVars
+  deployment        Deployment[]
+  envVars           EnvVar[]
 }
 
 model Deployment {
@@ -46,6 +45,16 @@ model Deployment {
   status    DeploymentStatus @default(QUEUED)
 
   // TODO: add lastBuildLogs
+}
+
+model EnvVar {
+  id             String  @id @default(uuid())
+  key            String
+  encryptedValue String
+  projectId      String  @map("project_id")
+  project        Project @relation(fields: [projectId], references: [id])
+
+  @@index([projectId])
 }
 
 enum DeploymentStatus {

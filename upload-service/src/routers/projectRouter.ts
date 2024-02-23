@@ -81,8 +81,6 @@ router.post("/", authenticateGithub, async (req, res) => {
 			});
 		});
 	}
-	// console.log(envVarList);
-	// res.status(200).json({message: "hehe"});
 
 	try {
 		const project = await prismaClient.project.create({

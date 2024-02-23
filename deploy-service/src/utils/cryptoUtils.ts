@@ -1,6 +1,6 @@
 import crypto from "crypto";
 
-import {ENCRYPTION_KEY} from "./config";
+import {ENCRYPTION_KEY} from "../config";
 
 crypto.randomBytes(16).toString("hex");
 

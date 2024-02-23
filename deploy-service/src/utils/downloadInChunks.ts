@@ -1,7 +1,7 @@
 import {GetObjectCommand} from "@aws-sdk/client-s3";
 import {createWriteStream} from "fs";
 
-import {s3Client} from "./connection/s3";
+import {s3Client} from "../connection/s3";
 
 const oneMB = 1024 * 1024;
 
@@ -77,7 +77,7 @@ const _downloadInChunks = async ({
 		writeStream.write(await Body?.transformToByteArray());
 		rangeAndLength = getRangeAndLength(ContentRange);
 	}
-	
+
 	writeStream.end();
 };
 

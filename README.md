@@ -409,10 +409,9 @@ Those files include:
 - `src/file.ts`
 
 TODO: remove all unused imports for each service
-TODO: shift all utilsFunctions to utils folder
-TODO: shift to postgresql & primsa for database
+TODO: use rootDir while building the project
+TODO: remove boilerplate code of prisma catching error & other stuff from project
 TODO: see how to create hooks using Octokit
-TODO: use prisma studio to visualize database in the browser
 TODO: shift to RabbitMQ/kafka for publishing tasks
 TODO: use redis only as caching layer: remove publish tasks & status onto queue
 TODO: add getOrSetCache function & use redis as caching: for /status of "upload-server"

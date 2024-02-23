@@ -7,8 +7,8 @@ import mime from "mime-types";
 import fs from "fs";
 import path from "path";
 
-import {s3Client} from "./connection/s3";
-import {AWS_S3_BUCKET_NAME} from "./config";
+import {s3Client} from "../connection/s3";
+import {AWS_S3_BUCKET_NAME} from "../config";
 import {getAllFiles} from "./file";
 import {downloadInChunks} from "./downloadInChunks";
 
@@ -28,10 +28,10 @@ const uploadFile = async (fileName: string, localFilePath: string) => {
 	// console.log(response);
 };
 
-export const copyFinalDistToS3 = async (id: string) => {
-	// __dirname = `D:/Projects/Vercel Clone/deploy-service/src/`
-
-	const folderPath = path.join(__dirname, `clonedRepos/${id}/dist`);
+export const copyFinalDistToS3 = async (id: string, outDir: string) => {
+	// __dirname = `D:/Projects/Vercel Clone/deploy-service/src/utils`
+	const outputPath = path.join(__dirname, "../");
+	const folderPath = path.join(outputPath, `clonedRepos/${id}/${outDir}`);
 	const allFiles = getAllFiles(folderPath);
 
 	const promises = allFiles.map((file) => {
@@ -64,7 +64,6 @@ export const downloadS3Folder = async (prefix: string) => {
 	const paginator = paginateListObjectsV2(paginatorConfig, commandInput);
 
 	let allFiles: string[] = [];
-	// let allFiles: _Object[] = [];
 
 	for await (const page of paginator) {
 		for (const object of page.Contents || []) {
@@ -83,12 +82,13 @@ export const downloadS3Folder = async (prefix: string) => {
 					return;
 				}
 
-				// __dirname = `D:/Projects/Vercel Clone/deploy-service/src/`
+				// __dirname = `D:/Projects/Vercel Clone/deploy-service/src/utils/`
+				// outputPath = `D:/Projects/Vercel Clone/deploy-service/src/`
 				// Key = `clonedRepos/${id}/src/App.jsx`
 				// finalOutputPath = "__dirName/Key" = `D:/Projects/Vercel Clone/deploy-service/src/clonedRepos/${id}/src/App.jsx`
 				// dirName = finalOutputPath stripped of fileName = `D:/Projects/Vercel Clone/deploy-service/src/clonedRepos/${id}/src`
-
-				const finalOutputPath = path.join(__dirname, Key);
+				const outputPath = path.join(__dirname, "../");
+				const finalOutputPath = path.join(outputPath, Key);
 				const dirName = path.dirname(finalOutputPath);
 
 				if (!fs.existsSync(dirName)) {

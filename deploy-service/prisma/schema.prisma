@@ -1,0 +1,57 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("PRISMA_DB_URL")
+}
+
+model Deployment {
+  id         String           @id
+  project_id String
+  branch     String           @default("main")
+  commit_id  String           @default("HEAD")
+  created_at DateTime         @default(now())
+  status     DeploymentStatus @default(QUEUED)
+  Project    Project          @relation(fields: [project_id], references: [id])
+}
+
+model EnvVar {
+  id             String  @id
+  key            String
+  encryptedValue String
+  project_id     String
+  Project        Project @relation(fields: [project_id], references: [id])
+
+  @@index([project_id])
+}
+
+model Project {
+  id                  String       @id
+  name                String
+  build_cmd           String       @default("npm run build")
+  install_cmd         String       @default("npm install")
+  out_dir             String       @default("dist")
+  root_dir            String       @default("")
+  github_project_name String
+  user_email_id       String
+  Deployment          Deployment[]
+  EnvVar              EnvVar[]
+  User                User         @relation(fields: [user_email_id], references: [email])
+}
+
+model User {
+  id      String    @id
+  email   String    @unique
+  Project Project[]
+
+  @@index([email])
+}
+
+enum DeploymentStatus {
+  QUEUED
+  DEPLOYING
+  SUCCESS
+  FAILED
+}

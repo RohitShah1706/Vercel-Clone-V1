@@ -1,18 +1,13 @@
 import {commandOptions} from "redis";
 import path from "path";
 
-import {
-	REDIS_HOST,
-	REDIS_PASSWORD,
-	REDIS_PORT,
-	REDIS_SECURE,
-	MONGO_URI,
-} from "./config";
+import {REDIS_HOST, REDIS_PASSWORD, REDIS_PORT, REDIS_SECURE} from "./config";
 import {getRedisClient} from "./connection/redis";
-import {copyFinalDistToS3, downloadS3Folder} from "./aws";
-import {buildProject} from "./buildProject";
-import {removeFolder} from "./file";
-import {connectMongo} from "./connection/mongo";
+import {copyFinalDistToS3, downloadS3Folder} from "./utils/aws";
+import {buildProject} from "./utils/buildProject";
+import {removeFolder} from "./utils/file";
+import {toTypedPrismaError} from "./utils/prismaErrorMap";
+import {prismaClient} from "./connection/prisma";
 
 const redisConfig = {
 	REDIS_HOST,
@@ -38,18 +33,81 @@ const consumeDeployTask = async () => {
 			continue;
 		}
 
-		await downloadS3Folder(`clonedRepos/${id}`);
+		// ! check if the deployment exists
+		try {
+			const deployment = await prismaClient.deployment.findUnique({
+				where: {
+					id,
+				},
+				select: {
+					Project: {
+						select: {
+							EnvVar: {
+								select: {
+									key: true,
+									encryptedValue: true,
+								},
+							},
+							build_cmd: true,
+							install_cmd: true,
+							root_dir: true,
+							out_dir: true,
+						},
+					},
+				},
+			});
 
-		await buildProject(id);
+			if (deployment === null) {
+				throw new Error(`No deployment found for id: ${id}`);
+			} else {
+				await downloadS3Folder(`clonedRepos/${id}`);
 
-		// ! wait for all files to upload
-		await copyFinalDistToS3(id);
+				const buildSuccess = await buildProject(id, deployment);
 
-		// ! users can poll /status/?id on "upload-service" to check the status of their build
-		publisher.hSet("status", id, "deployed");
+				// ! wait for all files to upload
+				if (buildSuccess === true) {
+					await copyFinalDistToS3(id, deployment.Project.out_dir);
+				}
 
-		// ! remove the cloned repository
-		removeFolder(path.join(__dirname, `clonedRepos/${id}`));
+				const updatedDeployment = await prismaClient.deployment.update({
+					where: {
+						id,
+					},
+					data: {
+						status: "SUCCESS",
+					},
+					select: {
+						status: true,
+					},
+				});
+				// ! users can poll /status/?id on "upload-service" to check the status of their build
+				publisher.hSet("status", id, updatedDeployment.status);
+			}
+		} catch (error) {
+			const typedError = toTypedPrismaError(error);
+			if (typedError !== null) {
+				console.error(`Error getting envVars for id: ${id}`, typedError);
+			} else {
+				console.log(error);
+			}
+
+			// ! users can poll /status/?id on "upload-service" to check the status of their build
+			const updatedDeployment = await prismaClient.deployment.update({
+				where: {
+					id,
+				},
+				data: {
+					status: "FAILED",
+				},
+				select: {
+					status: true,
+				},
+			});
+			publisher.hSet("status", id, updatedDeployment.status);
+		}
+
+		// // ! remove the cloned repository
+		// removeFolder(path.join(__dirname, `clonedRepos/${id}`));
 	}
 };
 
@@ -57,8 +115,8 @@ const run = async () => {
 	await publisher.connect();
 	await subscriber.connect();
 	console.log("Connected to Redis Queue");
-	await connectMongo(MONGO_URI);
-	console.log("Connected to MongoDB");
+	await prismaClient.$connect();
+	console.log("Connected to Postgresql");
 	consumeDeployTask();
 };
 

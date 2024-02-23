@@ -106,8 +106,8 @@ const consumeDeployTask = async () => {
 			publisher.hSet("status", id, updatedDeployment.status);
 		}
 
-		// // ! remove the cloned repository
-		// removeFolder(path.join(__dirname, `clonedRepos/${id}`));
+		// ! remove the cloned repository
+		removeFolder(path.join(__dirname, `clonedRepos/${id}`));
 	}
 };
 

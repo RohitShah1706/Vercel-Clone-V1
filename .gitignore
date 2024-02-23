@@ -4,3 +4,4 @@ tmp
 s3_docker_data
 localstack_data
 mounts
+clonedRepos

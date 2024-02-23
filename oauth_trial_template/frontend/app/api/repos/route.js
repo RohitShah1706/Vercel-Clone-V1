@@ -1,8 +1,6 @@
 import {NextResponse} from "next/server";
 import {getToken} from "next-auth/jwt";
 
-import {options} from "../auth/[...nextauth]/options";
-
 export async function GET(req, res) {
 	const token = await getToken({
 		req,

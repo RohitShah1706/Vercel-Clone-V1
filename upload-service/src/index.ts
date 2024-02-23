@@ -1,34 +1,18 @@
 import express from "express";
 import cors from "cors";
 import simpleGit from "simple-git";
-import {Octokit} from "@octokit/rest";
 import {z} from "zod";
 import path from "path";
 
-import {
-	REDIS_HOST,
-	REDIS_PASSWORD,
-	REDIS_PORT,
-	REDIS_SECURE,
-	MONGO_URI,
-} from "./config";
+import {REDIS_HOST, REDIS_PASSWORD, REDIS_PORT, REDIS_SECURE} from "./config";
 import {getAllFiles, removeFolder} from "./file";
 import {randomIdGenerator} from "./randomIdGenerator";
 import {uploadFile} from "./aws";
+import {prismaClient} from "./connection/prisma";
 import {getRedisClient} from "./connection/redis";
-import {connectMongo} from "./connection/mongo";
 import {decrypt, encrypt} from "./cryptoUtils";
 import {saveEnvVars} from "./controllers/envVars";
 import {authenticateGithub} from "./middlewares";
-
-interface Repo {
-	name: string;
-	full_name: string;
-	updated_at: string;
-	clone_url: string;
-	visibility: string;
-	default_branch: string;
-}
 
 const app = express();
 const publisher = getRedisClient({
@@ -41,68 +25,10 @@ const publisher = getRedisClient({
 app.use(cors());
 app.use(express.json());
 
-app.get("/repos", authenticateGithub, async (req, res) => {
-	const VisibilityEnum = z.enum(["all", "private", "public"]);
-
-	const parsed = VisibilityEnum.safeParse(req.query.visibility);
-	if (!parsed.success) {
-		return res.status(400).json({
-			error: {
-				visibility:
-					"Invalid value. Expected one of ['all', 'private', 'public']",
-			},
-		});
-	}
-
-	let visibility = parsed.data;
-
-	const octokit = new Octokit({auth: req.accessToken});
-	// console.log("Fetching repositories with visibility:", visibility);
-	try {
-		let page = 1;
-		let fetchMore = true;
-		let allRepos: Repo[] = [];
-
-		while (fetchMore) {
-			try {
-				const {data} = await octokit.repos.listForAuthenticatedUser({
-					visibility: visibility as "all" | "private" | "public",
-					per_page: 100,
-					page: page,
-				});
-
-				const repos: Repo[] = data.map((repo: any) => ({
-					name: repo.name,
-					full_name: repo.full_name,
-					updated_at: repo.updated_at,
-					clone_url: repo.clone_url,
-					visibility: repo.visibility,
-					default_branch: repo.default_branch,
-				}));
-
-				allRepos = [...allRepos, ...repos];
-				if (data.length < 100) {
-					fetchMore = false;
-				} else {
-					page++;
-				}
-			} catch (error) {
-				return res.status(500).json({error: "Error fetching repositories"});
-			}
-		}
-
-		// sort allRepos by updated_at
-		allRepos.sort((a, b) => {
-			const dateA = new Date(a.updated_at).getTime();
-			const dateB = new Date(b.updated_at).getTime();
-			return dateB - dateA;
-		});
-
-		res.json(allRepos);
-	} catch (error) {
-		res.status(500).json({error: "Internal Server Error"});
-	}
-});
+// ! routers
+app.use("/repos", require("./routers/repoRouter").default);
+app.use("/users", require("./routers/userRouter").default);
+app.use("/projects", require("./routers/projectRouter").default);
 
 app.post("/upload", authenticateGithub, async (req, res) => {
 	const UploadRequestBody = z.object({
@@ -128,12 +54,13 @@ app.post("/upload", authenticateGithub, async (req, res) => {
 		const encryptedEnvVars = encrypt(envVarsString);
 
 		// ! save the encrypted string in the database
-		try {
-			await saveEnvVars(id, encryptedEnvVars);
-		} catch (error) {
-			res.status(500).json({message: "Error saving env vars"});
-			return;
-		}
+		// TODO: save this in postgres database
+		// try {
+		// 	await saveEnvVars(id, encryptedEnvVars);
+		// } catch (error) {
+		// 	res.status(500).json({message: "Error saving env vars"});
+		// 	return;
+		// }
 	}
 
 	if (full_name === undefined || full_name === null) {
@@ -151,7 +78,7 @@ app.post("/upload", authenticateGithub, async (req, res) => {
 
 	// ! clone the repo
 	const git = simpleGit();
-	const oauth2Token = req.accessToken.split(" ")[1];
+	const oauth2Token = res.locals.accessToken.split(" ")[1] as string;
 	try {
 		const httpsRepoUrl = `https://oauth2:${oauth2Token}@github.com/${full_name}.git`;
 		// console.log("cloning", httpsRepoUrl, branch, commitId);
@@ -242,14 +169,24 @@ const startServer = async () => {
 	try {
 		await publisher.connect();
 		console.log("Connected to Redis");
-		await connectMongo(MONGO_URI);
-		console.log("Connected to MongoDB");
+		await prismaClient.$connect();
+		console.log("Connected to Postgresql");
 		app.listen(PORT, () => {
 			console.log(`Server is running on port ${PORT}`);
 		});
 	} catch (error) {
 		// ! exit gracefully
 		console.log(error);
+		try {
+			await publisher.quit();
+		} catch (publisherError) {
+			console.log("Failed to disconnect from Redis:", publisherError);
+		}
+		try {
+			await prismaClient.$disconnect();
+		} catch (prismaError) {
+			console.log("Failed to disconnect from Postgresql:", prismaError);
+		}
 		process.exit(1);
 	}
 };

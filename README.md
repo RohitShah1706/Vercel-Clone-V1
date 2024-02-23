@@ -68,6 +68,20 @@ Add in `package.json` file the following script to create dev server:
 
 ---
 
+## Setting up Primea with PostgreSQL
+
+**Reference**: [Prisma Docs - QuickStart](https://www.prisma.io/docs/getting-started/quickstart)
+
+```bash
+npx tsc --init
+npm install prisma --save-dev
+
+# Setup Prisma ORM with PostgreSQL
+npx prisma init --datasource-provider postgresql
+```
+
+---
+
 ## Setting up AWS S3 bucket for file uploading
 
 1. Create S3 bucket & Extract the `bucket name` and `region`
@@ -394,9 +408,12 @@ Those files include:
 - `src/cryptoUtis.ts`
 - `src/file.ts`
 
+TODO: remove all unused imports for each service
+TODO: create middleware as current middleware allow access to anybody's projects if you have a valid github access token
 TODO: shift to postgresql & primsa for database
+TODO: see how to create hooks using Octokit
 TODO: use prisma studio to visualize database in the browser
-TODO: shift to RabbitMQ for publishing tasks
+TODO: shift to RabbitMQ/kafka for publishing tasks
 TODO: use redis only as caching layer: remove publish tasks & status onto queue
 TODO: add getOrSetCache function & use redis as caching: for /status of "upload-server"
 TODO: use kafka to stream build logs from "deploy-service"
@@ -413,17 +430,18 @@ TODO: create frontend basic template
 1. [Behind the scenes of Vercel's infrastructure: Achieving optimal scalability and performance](https://vercel.com/blog/behind-the-scenes-of-vercels-infrastructure)
 
 2. [Learn Prisma In 60 Minutes - Web Dev Simplified](https://www.youtube.com/watch?v=RebA5J-rlwg)
+3. [Prisma Docs - QuickStart](https://www.prisma.io/docs/getting-started/quickstart)
 
-3. [Setup AWS S3 bucket locally with LocalStack](https://dev.to/navedrizv/setup-aws-s3-bucket-locally-with-localstack-3n4o)
+4. [Setup AWS S3 bucket locally with LocalStack](https://dev.to/navedrizv/setup-aws-s3-bucket-locally-with-localstack-3n4o)
 
-4. [Using Localstack to Emulate AWS S3 and SQS With Node](https://iamads.medium.com/using-localstack-emulate-aws-s3-and-sqs-with-node-d43dda1d71c0)
+5. [Using Localstack to Emulate AWS S3 and SQS With Node](https://iamads.medium.com/using-localstack-emulate-aws-s3-and-sqs-with-node-d43dda1d71c0)
 
-5. [Next-Auth on App Router - Solid Auth, Super Fast](https://www.youtube.com/watch?v=md65iBX5Gxg)
+6. [Next-Auth on App Router - Solid Auth, Super Fast](https://www.youtube.com/watch?v=md65iBX5Gxg)
 
-6. [NextAuth.js - Authentication for Next.js](https://next-auth.js.org/)
+7. [NextAuth.js - Authentication for Next.js](https://next-auth.js.org/)
 
-7. [Upload or download large files to and from Amazon S3 using an AWS SDK](https://docs.aws.amazon.com/AmazonS3/latest/userguide/example_s3_Scenario_UsingLargeFiles_section.html)
+8. [Upload or download large files to and from Amazon S3 using an AWS SDK](https://docs.aws.amazon.com/AmazonS3/latest/userguide/example_s3_Scenario_UsingLargeFiles_section.html)
 
-8. [KeyCDN for Performance testing](https://tools.keycdn.com/performance)
+9. [KeyCDN for Performance testing](https://tools.keycdn.com/performance)
 
 ---

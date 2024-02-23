@@ -1,15 +1,28 @@
 import {commandOptions} from "redis";
 import path from "path";
 
-import {MONGO_URI} from "./config";
+import {
+	REDIS_HOST,
+	REDIS_PASSWORD,
+	REDIS_PORT,
+	REDIS_SECURE,
+	MONGO_URI,
+} from "./config";
 import {getRedisClient} from "./connection/redis";
 import {copyFinalDistToS3, downloadS3Folder} from "./aws";
 import {buildProject} from "./buildProject";
 import {removeFolder} from "./file";
 import {connectMongo} from "./connection/mongo";
 
-const publisher = getRedisClient();
-const subscriber = getRedisClient();
+const redisConfig = {
+	REDIS_HOST,
+	REDIS_PASSWORD,
+	REDIS_SECURE,
+	REDIS_PORT,
+};
+
+const publisher = getRedisClient(redisConfig);
+const subscriber = getRedisClient(redisConfig);
 
 const consumeDeployTask = async () => {
 	while (true) {

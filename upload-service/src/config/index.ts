@@ -11,6 +11,7 @@ const AWS_EXPRESSAPP_USER_SECRET_ACCESS_KEY =
 const REDIS_HOST = process.env.REDIS_HOST || "redis";
 const REDIS_PORT = process.env.REDIS_PORT || "6379";
 const REDIS_PASSWORD = process.env.REDIS_PASSWORD || "mypassword";
+const REDIS_SECURE = process.env.REDIS_SECURE || "false";
 const MONGO_URI = process.env.MONGO_URI || "mongodb://localhost:27017";
 
 export {
@@ -22,5 +23,6 @@ export {
 	REDIS_HOST,
 	REDIS_PORT,
 	REDIS_PASSWORD,
+	REDIS_SECURE,
 	MONGO_URI,
 };

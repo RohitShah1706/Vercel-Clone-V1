@@ -5,7 +5,13 @@ import {Octokit} from "@octokit/rest";
 import {z} from "zod";
 import path from "path";
 
-import {REDIS_HOST, REDIS_PASSWORD, REDIS_PORT, MONGO_URI} from "./config";
+import {
+	REDIS_HOST,
+	REDIS_PASSWORD,
+	REDIS_PORT,
+	REDIS_SECURE,
+	MONGO_URI,
+} from "./config";
 import {getAllFiles, removeFolder} from "./file";
 import {randomIdGenerator} from "./randomIdGenerator";
 import {uploadFile} from "./aws";
@@ -25,7 +31,12 @@ interface Repo {
 }
 
 const app = express();
-const publisher = getRedisClient(REDIS_HOST, REDIS_PASSWORD, REDIS_PORT);
+const publisher = getRedisClient({
+	REDIS_HOST,
+	REDIS_PASSWORD,
+	REDIS_PORT,
+	REDIS_SECURE,
+});
 
 app.use(cors());
 app.use(express.json());

@@ -23,6 +23,17 @@ router.get("/:id", authenticateGithub, async (req, res) => {
 					email: true,
 				},
 			},
+			envVars: {
+				select: {
+					key: true,
+				},
+			},
+			lastDeployment: {
+				select: {
+					id: true,
+					status: true,
+				},
+			},
 			rootDir: true,
 			outDir: true,
 			installCmd: true,

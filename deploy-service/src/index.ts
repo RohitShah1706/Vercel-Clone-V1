@@ -74,7 +74,7 @@ const consumeDeployTask = async () => {
 						id,
 					},
 					data: {
-						status: "SUCCESS",
+						status: buildSuccess ? "SUCCESS" : "FAILED",
 					},
 					select: {
 						status: true,

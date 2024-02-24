@@ -231,8 +231,6 @@ secret_key     ****************test shared-credentials-file
 4. Create S3 bucket ("vercel-clone-s3-bucket") with "localstack" profile using awslocal
 
 ```bash
-# awslocal s3api create-bucket --bucket vercel-clone-s3-bucket --
-profile localstack
 aws s3 mb s3://vercel-clone-s3-bucket --endpoint-url http://localhost:4566 --profile localstack
 
 # List all buckets
@@ -409,6 +407,7 @@ Those files include:
 - `src/file.ts`
 
 TODO: remove all unused imports for each service
+TODO: add routes to get decrypted values of envVars, update, delete, add new envVars etc.
 TODO: use rootDir while building the project
 TODO: remove boilerplate code of prisma catching error & other stuff from project
 TODO: see how to create hooks using Octokit

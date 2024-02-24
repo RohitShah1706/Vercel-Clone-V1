@@ -64,7 +64,6 @@ module.exports.default = (publisher: RedisClientType) => {
 			return res.status(500).json({message: "Error updating project"});
 		}
 
-		// TODO: replace with deployment id from Deployment table
 		try {
 			const deployment = await prismaClient.deployment.create({
 				data: {
@@ -85,6 +84,7 @@ module.exports.default = (publisher: RedisClientType) => {
 					},
 				},
 			});
+
 			const deploymentId = deployment.id;
 
 			if (branch === undefined || branch === null) {
@@ -133,6 +133,16 @@ module.exports.default = (publisher: RedisClientType) => {
 				removeFolder(outputPath);
 				return res.status(500).json({message: "Error uploading files"});
 			}
+
+			// ! update the last deployment id in the project
+			await prismaClient.project.update({
+				where: {
+					id: projectId,
+				},
+				data: {
+					lastDeploymentId: deploymentId,
+				},
+			});
 
 			// ! put the deploymentId on the redis "build-queue" for deploy-service to consume
 			publisher.lPush("build-queue", deploymentId);

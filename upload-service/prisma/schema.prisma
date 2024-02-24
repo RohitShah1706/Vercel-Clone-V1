@@ -24,19 +24,22 @@ model Project {
   rootDir           String       @default("") @map("root_dir")
   githubProjectName String       @map("github_project_name")
   userEmailId       String       @map("user_email_id")
-  deployment        Deployment[]
+  deployments       Deployment[] @relation(name: "ProjectDeployments")
+  lastDeploymentId  String?      @unique @map("last_deployment_id")
+  lastDeployment    Deployment?  @relation("LastDeployment", fields: [lastDeploymentId], references: [id])
   envVars           EnvVar[]
   user              User         @relation(fields: [userEmailId], references: [email])
 }
 
 model Deployment {
-  id        String           @id @default(uuid())
-  projectId String           @map("project_id")
-  branch    String           @default("main")
-  commitId  String           @default("HEAD") @map("commit_id")
-  createdAt DateTime         @default(now()) @map("created_at")
-  status    DeploymentStatus @default(QUEUED)
-  project   Project          @relation(fields: [projectId], references: [id])
+  id                String           @id @default(uuid())
+  projectId         String           @map("project_id")
+  branch            String           @default("main")
+  commitId          String           @default("HEAD") @map("commit_id")
+  createdAt         DateTime         @default(now()) @map("created_at")
+  status            DeploymentStatus @default(QUEUED)
+  project           Project          @relation(name: "ProjectDeployments", fields: [projectId], references: [id])
+  associatedProject Project?         @relation("LastDeployment")
 }
 
 model EnvVar {

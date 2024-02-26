@@ -407,7 +407,6 @@ Those files include:
 - `src/file.ts`
 
 TODO: build a Github app to install on user's repositories directly: https://medium.com/swlh/building-the-first-github-app-3ea67a76c19a
-TODO: remove all unused imports for each service
 TODO: add routes to get decrypted values of envVars, update, delete, add new envVars etc.
 TODO: document why used Apache Kafka over RabbitMQ
 Resources:
@@ -418,13 +417,9 @@ Resources:
 TODO: use rootDir while building the project
 TODO: remove boilerplate code of prisma catching error & other stuff from project
 TODO: see how to create hooks using Octokit
-TODO: shift to RabbitMQ/kafka for publishing tasks
 TODO: use redis only as caching layer: remove publish tasks & status onto queue
 TODO: add getOrSetCache function & use redis as caching: for /status of "upload-server"
-TODO: use kafka to stream build logs from "deploy-service"
-TODO: create "kafka-consumer" service to consume build logs from "deploy-service" & push to clickhouse
-TODO: can use postgresql for storing build logs but clickhouse is faster
-TODO: use clickhouse - fast open-source OLAP database management system for real-time push of build logs from "deploy-service"
+TODO: document why to use clickhouse - fast open-source OLAP database management system for real-time push of build logs from "deploy-service"
 TODO: use polling on frontend to get build logs from "upload-service" (which will get from clickhouse) & display in real-time
 TODO: create frontend basic template
 

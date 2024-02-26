@@ -1,0 +1,5 @@
+{
+	"deploymentId": "1296949e-0376-43de-aab4-1d4a9ab1fff8",
+	"log": "\x1B[2mdist/\x1B[22m\x1B[32massets/react-CHdo91hT.svg  \x1B[39m\x1B[1m\x1B[2m  4.13 kB\x1B[22m\x1B[1m\x1B[22m\x1B[2m │ gzip:  2.05 kB\x1B[22m\n\x1B[2mdist/\x1B[22m\x1B[35massets/index-DiwrgTda.css  \x1B[39m\x1B[1m\x1B[2m  1.39 kB\x1B[22m\x1B[1m\x1B[22m\x1B[2m │ gzip:  0.72 kB\x1B[22m\n\x1B[2mdist/\x1B[22m\x1B[36massets/index-Cut9hnE5.js   \x1B[39m\x1B[1m\x1B[2m143.81 kB\x1B[22m\x1B[1m\x1B[22m\x1B[2m │ gzip: 46.30 kB\x1B[22m\n\x1B[32m✓ built in 794ms\x1B[39m\n",
+	"time": "2024-02-26T16:14:08.910Z"
+}

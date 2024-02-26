@@ -1,123 +1,238 @@
-import {commandOptions} from "redis";
 import path from "path";
 
-import {REDIS_HOST, REDIS_PASSWORD, REDIS_PORT, REDIS_SECURE} from "./config";
+import {getKafkaInstance} from "./connection/kafka";
+import {prismaClient} from "./connection/prisma";
 import {getRedisClient} from "./connection/redis";
+import {DEPLOY_SERVICE_TASKS_KAFKA_TOPIC} from "./config";
+import {randomIdGenerator} from "./utils/randomIdGenerator";
 import {copyFinalDistToS3, downloadS3Folder} from "./utils/aws";
-import {buildProject} from "./utils/buildProject";
+import {buildProject} from "./buildProject";
 import {removeFolder} from "./utils/file";
 import {toTypedPrismaError} from "./utils/prismaErrorMap";
-import {prismaClient} from "./connection/prisma";
 
-const redisConfig = {
-	REDIS_HOST,
-	REDIS_PASSWORD,
-	REDIS_SECURE,
-	REDIS_PORT,
-};
+const kafka = getKafkaInstance(`deploy-service-${randomIdGenerator()}`);
 
-const publisher = getRedisClient(redisConfig);
-const subscriber = getRedisClient(redisConfig);
+const producer = kafka.producer();
+const consumer = kafka.consumer({
+	// ! groupId will allow kafka to allow a pool of consumers to divide the work of processing records from topics
+	groupId: "deploy-service-task-consumer",
+	// ! maxTime a consumer can go without sending a heartbeat to the broker
+	// ! NOTE: if our deployment takes longer than this sessionTimeout(default 30000ms) then,
+	// ! kafka might think that the consumer has died and reassign the partition to another consumer in the group
+	sessionTimeout: 60000, // 1 minute - for long running deployments
+});
+const publisher = getRedisClient();
 
-const consumeDeployTask = async () => {
-	while (true) {
-		const response = await subscriber.brPop(
-			commandOptions({isolated: true}),
-			"build-queue",
-			0
-		);
-		console.log("response", response);
-		const id = response?.element;
+const consumeDeployTasks = async () => {
+	console.log("Consuming deploy tasks from", DEPLOY_SERVICE_TASKS_KAFKA_TOPIC);
+	await consumer.subscribe({
+		topic: DEPLOY_SERVICE_TASKS_KAFKA_TOPIC,
+		// ! fromBeginning: false => only new messages produced after the consumer has started will be consumed
+		// ! fromBeginning: true => all messages even those produced before the consumer has started will be consumed
+		fromBeginning: true,
+	});
 
-		if (id === undefined || id === null) {
-			continue;
-		}
+	await consumer.run({
+		eachMessage: async ({topic, partition, message}) => {
+			try {
+				const id = message.value?.toString();
 
-		// ! check if the deployment exists
-		try {
-			const deployment = await prismaClient.deployment.findUnique({
-				where: {
-					id,
-				},
-				select: {
-					Project: {
-						select: {
-							EnvVar: {
-								select: {
-									key: true,
-									encryptedValue: true,
-								},
-							},
-							build_cmd: true,
-							install_cmd: true,
-							root_dir: true,
-							out_dir: true,
-						},
-					},
-				},
-			});
-
-			if (deployment === null) {
-				throw new Error(`No deployment found for id: ${id}`);
-			} else {
-				await downloadS3Folder(`clonedRepos/${id}`);
-
-				const buildSuccess = await buildProject(id, deployment);
-
-				// ! wait for all files to upload
-				if (buildSuccess === true) {
-					await copyFinalDistToS3(id, deployment.Project.out_dir);
+				if (id === undefined || id === null) {
+					return;
 				}
 
-				const updatedDeployment = await prismaClient.deployment.update({
-					where: {
-						id,
-					},
-					data: {
-						status: buildSuccess ? "SUCCESS" : "FAILED",
-					},
-					select: {
-						status: true,
-					},
-				});
-				// ! users can poll /status/?id on "upload-service" to check the status of their build
-				publisher.hSet("status", id, updatedDeployment.status);
-			}
-		} catch (error) {
-			const typedError = toTypedPrismaError(error);
-			if (typedError !== null) {
-				console.error(`Error getting envVars for id: ${id}`, typedError);
-			} else {
-				console.log(error);
-			}
+				console.log("Received deploy task:", id);
 
-			// ! users can poll /status/?id on "upload-service" to check the status of their build
-			const updatedDeployment = await prismaClient.deployment.update({
-				where: {
-					id,
-				},
-				data: {
-					status: "FAILED",
-				},
-				select: {
-					status: true,
-				},
-			});
-			publisher.hSet("status", id, updatedDeployment.status);
-		}
+				// ! check if the deployment exists
+				try {
+					const deployment = await prismaClient.deployment.findUnique({
+						where: {
+							id,
+						},
+						select: {
+							Project: {
+								select: {
+									EnvVar: {
+										select: {
+											key: true,
+											encryptedValue: true,
+										},
+									},
+									build_cmd: true,
+									install_cmd: true,
+									root_dir: true,
+									out_dir: true,
+								},
+							},
+						},
+					});
 
-		// ! remove the cloned repository
-		removeFolder(path.join(__dirname, `clonedRepos/${id}`));
-	}
+					if (deployment === null) {
+						throw new Error(`No deployment found for id: ${id}`);
+					} else {
+						await downloadS3Folder(`clonedRepos/${id}`);
+						console.log("calling buildProject");
+						const buildSuccess = await buildProject(id, deployment, producer);
+
+						// ! wait for all files to upload
+						if (buildSuccess === true) {
+							await copyFinalDistToS3(id, deployment.Project.out_dir);
+						}
+
+						const updatedDeployment = await prismaClient.deployment.update({
+							where: {
+								id,
+							},
+							data: {
+								status: buildSuccess ? "SUCCESS" : "FAILED",
+							},
+							select: {
+								status: true,
+							},
+						});
+						// ! users can poll /status/?id on "upload-service" to check the status of their build
+						publisher.hSet("status", id, updatedDeployment.status);
+					}
+				} catch (error) {
+					const typedError = toTypedPrismaError(error);
+					if (typedError !== null) {
+						console.error(`Error getting envVars for id: ${id}`, typedError);
+					} else {
+						console.log(error);
+					}
+
+					// ! users can poll /status/?id on "upload-service" to check the status of their build
+					const updatedDeployment = await prismaClient.deployment.update({
+						where: {
+							id,
+						},
+						data: {
+							status: "FAILED",
+						},
+						select: {
+							status: true,
+						},
+					});
+					publisher.hSet("status", id, updatedDeployment.status);
+				}
+
+				// ! remove the cloned repository
+				removeFolder(path.join(__dirname, `clonedRepos/${id}`));
+
+				// ! commit the message to mark the message as processed
+				await consumer.commitOffsets([
+					{
+						topic: topic,
+						partition: partition,
+						offset: message.offset + 1,
+					},
+				]);
+			} catch (error) {
+				console.error(error);
+			}
+		},
+	});
+
+	// while (true) {
+	// 	const response = await subscriber.brPop(
+	// 		commandOptions({isolated: true}),
+	// 		"build-queue",
+	// 		0
+	// 	);
+	// 	console.log("response", response);
+	// 	const id = response?.element;
+
+	// 	if (id === undefined || id === null) {
+	// 		continue;
+	// 	}
+
+	// 	// ! check if the deployment exists
+	// 	try {
+	// 		const deployment = await prismaClient.deployment.findUnique({
+	// 			where: {
+	// 				id,
+	// 			},
+	// 			select: {
+	// 				Project: {
+	// 					select: {
+	// 						EnvVar: {
+	// 							select: {
+	// 								key: true,
+	// 								encryptedValue: true,
+	// 							},
+	// 						},
+	// 						build_cmd: true,
+	// 						install_cmd: true,
+	// 						root_dir: true,
+	// 						out_dir: true,
+	// 					},
+	// 				},
+	// 			},
+	// 		});
+
+	// 		if (deployment === null) {
+	// 			throw new Error(`No deployment found for id: ${id}`);
+	// 		} else {
+	// 			await downloadS3Folder(`clonedRepos/${id}`);
+
+	// 			const buildSuccess = await buildProject(id, deployment);
+
+	// 			// ! wait for all files to upload
+	// 			if (buildSuccess === true) {
+	// 				await copyFinalDistToS3(id, deployment.Project.out_dir);
+	// 			}
+
+	// 			const updatedDeployment = await prismaClient.deployment.update({
+	// 				where: {
+	// 					id,
+	// 				},
+	// 				data: {
+	// 					status: buildSuccess ? "SUCCESS" : "FAILED",
+	// 				},
+	// 				select: {
+	// 					status: true,
+	// 				},
+	// 			});
+	// 			// ! users can poll /status/?id on "upload-service" to check the status of their build
+	// 			publisher.hSet("status", id, updatedDeployment.status);
+	// 		}
+	// 	} catch (error) {
+	// 		const typedError = toTypedPrismaError(error);
+	// 		if (typedError !== null) {
+	// 			console.error(`Error getting envVars for id: ${id}`, typedError);
+	// 		} else {
+	// 			console.log(error);
+	// 		}
+
+	// 		// ! users can poll /status/?id on "upload-service" to check the status of their build
+	// 		const updatedDeployment = await prismaClient.deployment.update({
+	// 			where: {
+	// 				id,
+	// 			},
+	// 			data: {
+	// 				status: "FAILED",
+	// 			},
+	// 			select: {
+	// 				status: true,
+	// 			},
+	// 		});
+	// 		publisher.hSet("status", id, updatedDeployment.status);
+	// 	}
+
+	// 	// ! remove the cloned repository
+	// 	removeFolder(path.join(__dirname, `clonedRepos/${id}`));
+	// }
 };
 
 const run = async () => {
+	await consumer.connect();
+	await producer.connect();
+	console.log("Connected to Kafka");
 	await publisher.connect();
-	await subscriber.connect();
-	console.log("Connected to Redis Queue");
+	console.log("Connected to Redis");
 	await prismaClient.$connect();
 	console.log("Connected to Postgresql");
-	consumeDeployTask();
+	consumeDeployTasks();
 };
 
 run();

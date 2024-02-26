@@ -2,26 +2,41 @@ import {Router} from "express";
 import {z} from "zod";
 import simpleGit from "simple-git";
 import path from "path";
-import {getAllFiles, removeFolder} from "../utils/file";
-import {uploadFile} from "../utils/aws";
 import {RedisClientType} from "redis";
+import {Producer} from "kafkajs";
 
+import {DEPLOY_SERVICE_TASKS_KAFKA_TOPIC} from "../config";
 import {prismaClient} from "../connection/prisma";
 import {authenticateGithub} from "../middlewares";
+import {getAllFiles, removeFolder} from "../utils/file";
+import {uploadFile} from "../utils/aws";
 import {toTypedPrismaError} from "../utils/prismaErrorMap";
-import {encrypt} from "../utils/cryptoUtils";
+import {publishMessage} from "../utils/kafka";
 
-module.exports.default = (publisher: RedisClientType) => {
+module.exports.default = (publisher: RedisClientType, producer: Producer) => {
 	const router = Router();
 
+	// ! ONLY FOR TESTING TO TRIGGER A DEPLOYMENT DIRECTLY
+	// router.post("/send", async (req, res) => {
+	// 	const {id}: {id: string} = req.body;
+
+	// 	await publishMessage({
+	// 		producer,
+	// 		topic: DEPLOY_SERVICE_TASKS_KAFKA_TOPIC,
+	// 		key: "deploy-task",
+	// 		message: id,
+	// 	});
+	// 	res.status(200).json({message: "Message sent"});
+	// });
+
 	router.post("/deploy", authenticateGithub, async (req, res) => {
-		const UploadRequestBody = z.object({
+		const DeployRequestBody = z.object({
 			projectId: z.string().min(1),
 			branch: z.string().optional(),
 			commitId: z.string().length(40).optional(),
 		});
 
-		const parsed = UploadRequestBody.safeParse(req.body);
+		const parsed = DeployRequestBody.safeParse(req.body);
 
 		if (!parsed.success) {
 			return res
@@ -144,8 +159,14 @@ module.exports.default = (publisher: RedisClientType) => {
 				},
 			});
 
-			// ! put the deploymentId on the redis "build-queue" for deploy-service to consume
-			publisher.lPush("build-queue", deploymentId);
+			// ! put the deploymentId on the Kafka DEPLOY_SERVICE_TASKS_KAFKA_TOPIC topic for deploy-service to consume
+			// publisher.lPush("build-queue", deploymentId);
+			await publishMessage({
+				producer,
+				topic: DEPLOY_SERVICE_TASKS_KAFKA_TOPIC,
+				key: "deploy-task",
+				message: deploymentId,
+			});
 
 			// ! users can poll /status/?deploymentId to check the status of their build
 			publisher.hSet("status", deploymentId, deployment.status);
@@ -164,7 +185,7 @@ module.exports.default = (publisher: RedisClientType) => {
 		}
 	});
 
-	router.get("/status", async (req, res) => {
+	router.get("/status", authenticateGithub, async (req, res) => {
 		const StatusRequestQuery = z.object({
 			id: z.string(),
 		});

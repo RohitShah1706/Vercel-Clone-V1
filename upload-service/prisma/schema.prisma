@@ -40,6 +40,8 @@ model Deployment {
   status            DeploymentStatus @default(QUEUED)
   project           Project          @relation(name: "ProjectDeployments", fields: [projectId], references: [id])
   associatedProject Project?         @relation("LastDeployment")
+
+  LogEvent LogEvent[]
 }
 
 model EnvVar {
@@ -50,6 +52,16 @@ model EnvVar {
   project        Project @relation(fields: [projectId], references: [id])
 
   @@index([projectId])
+}
+
+model LogEvent {
+  id           String      @id @default(uuid())
+  timestamp    DateTime    @default(now()) @db.Timestamp(6)
+  deploymentId String?     @map("deployment_id")
+  Deployment   Deployment? @relation(fields: [deploymentId], references: [id])
+  log          String
+
+  @@index([deploymentId])
 }
 
 enum DeploymentStatus {

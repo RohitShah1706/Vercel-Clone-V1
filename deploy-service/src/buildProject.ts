@@ -1,11 +1,12 @@
 import {exec} from "child_process";
-import {PrismaClient} from "@prisma/client";
 import fs from "fs";
-import path, {resolve} from "path";
+import path from "path";
+import {Producer} from "kafkajs";
 
-import {toTypedPrismaError} from "./prismaErrorMap";
-import {getAllFiles} from "./file";
-import {decrypt} from "./cryptoUtils";
+import {DEPLOY_SERVICE_LOGS_KAFKA_TOPIC} from "./config";
+import {getAllFiles} from "./utils/file";
+import {publishMessage} from "./utils/kafka";
+import {decrypt} from "./utils/cryptoUtils";
 
 type DeploymentType = {
 	Project: {
@@ -22,12 +23,29 @@ type DeploymentType = {
 
 export const buildProject = async (
 	id: string,
-	deployment: DeploymentType
+	deployment: DeploymentType,
+	producer: Producer
 ): Promise<boolean> => {
+	const _publishLog = async (log: string) => {
+		const now = new Date();
+		await publishMessage({
+			producer,
+			key: "deploy-log",
+			topic: DEPLOY_SERVICE_LOGS_KAFKA_TOPIC,
+			message: JSON.stringify({
+				deploymentId: id,
+				log,
+				time: now.toISOString(),
+			}),
+		});
+	};
+
 	console.log(`Building project ${id}`);
+	await _publishLog(`Building project ${id}`);
 	try {
 		if (deployment.Project.EnvVar === null) {
 			console.log(`No envVars found for id: ${id}`);
+			await _publishLog(`No envVars found for id: ${id}`);
 		} else {
 			// console.log("build_cmd", deployment.Project.build_cmd);
 			// console.log("install_cmd", deployment.Project.install_cmd);
@@ -35,9 +53,8 @@ export const buildProject = async (
 			// console.log("out_dir", deployment.Project.out_dir);
 
 			// ! decrypt each envVar and save to .env file inside the cloned repository
-			const outputPath = path.join(__dirname, "../");
 			const writeStream = fs.createWriteStream(
-				path.join(outputPath, `clonedRepos/${id}/.env`),
+				path.join(__dirname, `clonedRepos/${id}/.env`),
 				{flags: "w"}
 			);
 
@@ -52,6 +69,7 @@ export const buildProject = async (
 
 			writeStream.end();
 			console.log(`envVars saved for id: ${id}`);
+			await _publishLog(`envVars saved for id: ${id}`);
 		}
 	} catch (error) {
 		console.log(`Error writing envVars for id: ${id}`, error);
@@ -60,25 +78,34 @@ export const buildProject = async (
 
 	// TODO: use docker for this step
 	return new Promise(async (resolve) => {
-		console.log(`Building project ${id}`);
+		// add timestamp to log
+
+		console.log(`Starting Build Process for id: ${id}`);
+		await _publishLog(`Starting Build Process for id: ${id}`);
+
 		// __dirname = `D:/Projects/Vercel Clone/deploy-service/src/utils`
-		const outputPath = path.join(__dirname, "../");
-		console.log(
-			"running command",
-			`cd ${path.join(outputPath, `clonedRepos/${id}`)}` +
-				`&& ${deployment.Project.install_cmd} && ${deployment.Project.build_cmd}`
+		// console.log(
+		// 	"running command",
+		// 	`cd ${path.join(__dirname, `clonedRepos/${id}`)}` +
+		// 		`&& ${deployment.Project.install_cmd} && ${deployment.Project.build_cmd}`
+		// );
+		await _publishLog(
+			`Running "${deployment.Project.install_cmd}" && "${deployment.Project.build_cmd}"`
 		);
+
 		const childProcess = exec(
-			`cd ${path.join(outputPath, `clonedRepos/${id}`)}` +
+			`cd ${path.join(__dirname, `clonedRepos/${id}`)}` +
 				`&& ${deployment.Project.install_cmd} && ${deployment.Project.build_cmd}`
 		);
 
 		// logging statements
-		childProcess.stdout?.on("data", (data) => {
+		childProcess.stdout?.on("data", async (data) => {
 			console.log("STDOUT:", data);
+			await _publishLog(data);
 		});
-		childProcess.stderr?.on("data", (data) => {
+		childProcess.stderr?.on("data", async (data) => {
 			console.log("STDERR:", data);
+			await _publishLog(data);
 		});
 
 		// triggers when code is finished executing
@@ -89,7 +116,7 @@ export const buildProject = async (
 			// so this step is to update all files to point to proper path by prefixing "/<id>" to all files
 			const outDirName = deployment.Project.out_dir;
 			const allFiles = getAllFiles(
-				path.join(outputPath, `clonedRepos/${id}/${outDirName}`)
+				path.join(__dirname, `clonedRepos/${id}/${outDirName}`)
 			);
 
 			const toUpdate: string[] = allFiles.filter((file) => {
@@ -107,7 +134,7 @@ export const buildProject = async (
 
 			toUpdate.forEach((file) => {
 				const keyToSearch = file.slice(
-					path.join(outputPath, `clonedRepos/${id}/${outDirName}`).length
+					path.join(__dirname, `clonedRepos/${id}/${outDirName}`).length
 				);
 				allFiles.forEach((file) => {
 					const fileType = file.split(".").pop();
@@ -121,7 +148,8 @@ export const buildProject = async (
 					}
 				});
 			});
-			console.log(`Finished building project ${id}`);
+			console.log(`Finished building project id: ${id}`);
+			await _publishLog(`Finished building project for id: ${id}`);
 			resolve(true);
 		});
 	});

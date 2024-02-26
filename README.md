@@ -406,8 +406,15 @@ Those files include:
 - `src/cryptoUtis.ts`
 - `src/file.ts`
 
+TODO: build a Github app to install on user's repositories directly: https://medium.com/swlh/building-the-first-github-app-3ea67a76c19a
 TODO: remove all unused imports for each service
 TODO: add routes to get decrypted values of envVars, update, delete, add new envVars etc.
+TODO: document why used Apache Kafka over RabbitMQ
+Resources:
+
+1.  https://www.youtube.com/watch?v=Ch5VhJzaoaI
+2.  https://www.youtube.com/watch?v=UNUz1-msbOM
+
 TODO: use rootDir while building the project
 TODO: remove boilerplate code of prisma catching error & other stuff from project
 TODO: see how to create hooks using Octokit

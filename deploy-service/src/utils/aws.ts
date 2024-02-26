@@ -73,42 +73,32 @@ export const downloadS3Folder = async (prefix: string) => {
 		}
 	}
 
-	const allPromises =
-		// ! map will create an array of promises
-		allFiles.map(async (Key) => {
-			return new Promise(async (resolve) => {
-				if (!Key) {
-					resolve("");
-					return;
-				}
+	const outputPath = path.join(__dirname, "../");
 
-				// __dirname = `D:/Projects/Vercel Clone/deploy-service/src/utils/`
-				// outputPath = `D:/Projects/Vercel Clone/deploy-service/src/`
-				// Key = `clonedRepos/${id}/src/App.jsx`
-				// finalOutputPath = "__dirName/Key" = `D:/Projects/Vercel Clone/deploy-service/src/clonedRepos/${id}/src/App.jsx`
-				// dirName = finalOutputPath stripped of fileName = `D:/Projects/Vercel Clone/deploy-service/src/clonedRepos/${id}/src`
-				const outputPath = path.join(__dirname, "../");
-				const finalOutputPath = path.join(outputPath, Key);
-				const dirName = path.dirname(finalOutputPath);
+	const downloadPromises = allFiles.map(async (Key) => {
+		if (!Key) {
+			return;
+		}
 
-				if (!fs.existsSync(dirName)) {
-					fs.mkdirSync(dirName, {recursive: true});
-				}
+		const finalOutputPath = path.join(outputPath, Key);
+		const dirName = path.dirname(finalOutputPath);
 
-				downloadInChunks({
-					bucket: AWS_S3_BUCKET_NAME,
-					key: Key,
-					localFilePath: finalOutputPath,
-				}).then(() => {
-					resolve("");
-				});
-			});
-		}) || [];
+		if (!fs.existsSync(dirName)) {
+			fs.mkdirSync(dirName, {recursive: true});
+		}
+
+		await downloadInChunks({
+			bucket: AWS_S3_BUCKET_NAME,
+			key: Key,
+			localFilePath: finalOutputPath,
+		});
+
+		// console.log(`Downloaded ${Key}`);
+		return Key;
+	});
 
 	console.log("Waiting for all files to be downloaded...");
-
-	// ! wait for only those promises that are not undefined
-	await Promise.all(allPromises?.filter((x) => x !== undefined));
+	await Promise.all(downloadPromises);
 
 	console.log("All files downloaded");
 };

@@ -1,17 +1,6 @@
 import {Request, Response, NextFunction} from "express";
 import {Octokit} from "@octokit/rest";
 
-// ! Extend the "Request" interface with an "accessToken" property
-// declare module "express-serve-static-core" {
-// 	interface Request {
-// 		accessToken: string;
-// 	}
-// 	// interface ResponseLocals {
-// 	// 	accessToken: string;
-// 	// 	emailId: string;
-// 	// }
-// }
-
 const authenticateGithub = async (
 	req: Request,
 	res: Response,

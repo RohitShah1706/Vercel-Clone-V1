@@ -12,6 +12,13 @@ const REDIS_HOST = process.env.REDIS_HOST || "redis";
 const REDIS_PORT = process.env.REDIS_PORT || "6379";
 const REDIS_PASSWORD = process.env.REDIS_PASSWORD || "mypassword";
 const REDIS_SECURE = process.env.REDIS_SECURE || "false";
+const KAFKA_BROKER = process.env.KAFKA_BROKER || "";
+const KAFKA_USERNAME = process.env.KAFKA_USERNAME || "";
+const KAFKA_PASSWORD = process.env.KAFKA_PASSWORD || "";
+const DEPLOY_SERVICE_TASKS_KAFKA_TOPIC =
+	process.env.DEPLOY_SERVICE_TASKS_KAFKA_TOPIC || "deploy-tasks";
+const DEPLOY_SERVICE_LOGS_KAFKA_TOPIC =
+	process.env.DEPLOY_SERVICE_LOGS_KAFKA_TOPIC || "deploy-logs";
 
 export {
 	ENCRYPTION_KEY,
@@ -23,4 +30,9 @@ export {
 	REDIS_PORT,
 	REDIS_SECURE,
 	REDIS_PASSWORD,
+	KAFKA_BROKER,
+	KAFKA_USERNAME,
+	KAFKA_PASSWORD,
+	DEPLOY_SERVICE_LOGS_KAFKA_TOPIC,
+	DEPLOY_SERVICE_TASKS_KAFKA_TOPIC,
 };

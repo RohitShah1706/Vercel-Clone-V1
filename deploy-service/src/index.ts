@@ -34,15 +34,14 @@ const consumeDeployTasks = async () => {
 
 	await consumer.run({
 		eachMessage: async ({topic, partition, message}) => {
+			const id = message.value?.toString();
+
+			if (id === undefined || id === null) {
+				return;
+			}
+
+			console.log("Received deploy task:", id);
 			try {
-				const id = message.value?.toString();
-
-				if (id === undefined || id === null) {
-					return;
-				}
-
-				console.log("Received deploy task:", id);
-
 				// ! check if the deployment exists
 				try {
 					const deployment = await prismaClient.deployment.findUnique({
@@ -70,6 +69,8 @@ const consumeDeployTasks = async () => {
 					if (deployment === null) {
 						throw new Error(`No deployment found for id: ${id}`);
 					} else {
+						await publisher.hSet("status", id, "DEPLOYING");
+
 						await downloadS3Folder(`clonedRepos/${id}`);
 						console.log("calling buildProject");
 						const buildSuccess = await buildProject(id, deployment, producer);
@@ -128,6 +129,7 @@ const consumeDeployTasks = async () => {
 					},
 				]);
 			} catch (error) {
+				await publisher.hSet("status", id, "FAILED");
 				console.error(error);
 			}
 		},

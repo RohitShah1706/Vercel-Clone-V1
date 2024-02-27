@@ -14,7 +14,6 @@ router.get("/:id", authenticateGithub, async (req, res) => {
 		},
 		select: {
 			log: true,
-			timestamp: true,
 		},
 		orderBy: {
 			timestamp: "asc",

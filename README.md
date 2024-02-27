@@ -142,7 +142,7 @@ npx prisma init --datasource-provider postgresql
    ![alt text](screenshots/cloudfront_setup_02.png)
    ![alt text](screenshots/cloudfront_setup_04.png)
 
-4. Copy the OCA that is generated and paste it in the S3 bucket policy.
+4. Copy the `OAC` (Origin Access Control) that is generated and paste it in the S3 bucket policy.
 
    ![alt text](screenshots/cloudfront_setup_05.png)
 
@@ -262,7 +262,7 @@ aws s3 ls s3://vercel-clone-s3-bucket/clonedRepos/5b2abda7e18543df85f8d84814dda1
 
 3. Get the `CLIENT_ID` and `CLIENT_SECRET` variables.
 
-   ![alt text](oauth_setup_02.png)
+   ![alt text](screenshots/oauth_setup_02.png)
 
 **NOTE**: By default NextAuth.js only asks for `user:email` scope. But we want to generate an `access_token` to also access private repositories in `upload-service`. So we override the default scope in `options.js` file.
 
@@ -408,6 +408,7 @@ Those files include:
 
 TODO: build a Github app to install on user's repositories directly: https://medium.com/swlh/building-the-first-github-app-3ea67a76c19a
 TODO: add routes to get decrypted values of envVars, update, delete, add new envVars etc.
+TODO: shift to using projectId instead of deploymentId while storing in S3
 TODO: document why used Apache Kafka over RabbitMQ
 Resources:
 

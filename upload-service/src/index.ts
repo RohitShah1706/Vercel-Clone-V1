@@ -66,7 +66,7 @@ const initKafkaConsumer = async () => {
 			resolveOffset,
 		}) {
 			const messages = batch.messages;
-			console.log(`Received. ${messages.length} messages..`);
+			// console.log(`Received. ${messages.length} messages..`);
 			for (const message of messages) {
 				if (!isRunning() || isStale()) {
 					console.log("Consumer is not running or is stale");

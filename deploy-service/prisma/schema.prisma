@@ -11,7 +11,7 @@ model Deployment {
   id                                             String           @id
   project_id                                     String
   branch                                         String           @default("main")
-  commit_id                                      String           @default("HEAD")
+  commit_id                                      String
   created_at                                     DateTime         @default(now())
   status                                         DeploymentStatus @default(QUEUED)
   Project                                        Project          @relation(fields: [project_id], references: [id])

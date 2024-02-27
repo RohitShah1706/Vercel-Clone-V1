@@ -35,7 +35,7 @@ model Deployment {
   id                String           @id @default(uuid())
   projectId         String           @map("project_id")
   branch            String           @default("main")
-  commitId          String           @default("HEAD") @map("commit_id")
+  commitId          String           @map("commit_id")
   createdAt         DateTime         @default(now()) @map("created_at")
   status            DeploymentStatus @default(QUEUED)
   project           Project          @relation(name: "ProjectDeployments", fields: [projectId], references: [id])

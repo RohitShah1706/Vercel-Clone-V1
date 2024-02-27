@@ -32,8 +32,8 @@ module.exports.default = (publisher: RedisClientType, producer: Producer) => {
 	router.post("/deploy", authenticateGithub, async (req, res) => {
 		const DeployRequestBody = z.object({
 			projectId: z.string().min(1),
-			branch: z.string().optional(),
-			commitId: z.string().length(40).optional(),
+			branch: z.string().min(1),
+			commitId: z.string().length(40),
 		});
 
 		const parsed = DeployRequestBody.safeParse(req.body);
@@ -102,14 +102,6 @@ module.exports.default = (publisher: RedisClientType, producer: Producer) => {
 
 			const deploymentId = deployment.id;
 
-			if (branch === undefined || branch === null) {
-				branch = "main";
-			}
-
-			if (commitId === undefined || commitId === null) {
-				commitId = "HEAD";
-			}
-
 			// ! clone the repo
 			const git = simpleGit();
 			const oauth2Token = accessToken.split(" ")[1] as string;
@@ -123,6 +115,15 @@ module.exports.default = (publisher: RedisClientType, producer: Producer) => {
 			} catch (error) {
 				// console.log(error);
 				removeFolder(outputPath);
+				await prismaClient.deployment.update({
+					where: {
+						id: deploymentId,
+					},
+					data: {
+						status: "FAILED",
+					},
+				});
+				await publisher.hSet("status", deploymentId, "FAILED");
 				return res
 					.status(400)
 					.json({message: "Invalid URL or Branch or Commit ID"});
@@ -141,7 +142,6 @@ module.exports.default = (publisher: RedisClientType, producer: Producer) => {
 							file.slice(path.join(__dirname, "../").length),
 							file
 						);
-						// return uploadFile(file.slice(__dirname.length + 1), file);
 					})
 				);
 			} catch (error) {
@@ -206,6 +206,58 @@ module.exports.default = (publisher: RedisClientType, producer: Producer) => {
 		}
 
 		return res.status(200).json({status});
+	});
+
+	router.get("/all/:projectId", authenticateGithub, async (req, res) => {
+		const {projectId} = req.params;
+		const emailId = res.locals.emailId;
+
+		if (projectId === undefined || projectId === null) {
+			return res.status(400).json({message: "Invalid project ID"});
+		}
+
+		try {
+			const existingProject = await prismaClient.project.findUnique({
+				where: {
+					id: projectId,
+				},
+				select: {
+					userEmailId: true,
+				},
+			});
+
+			if (existingProject === null) {
+				return res.status(404).json({message: "Project not found"});
+			}
+
+			if (existingProject.userEmailId !== emailId) {
+				return res.status(403).json({message: "Forbidden"});
+			}
+
+			const deployments = await prismaClient.deployment.findMany({
+				where: {
+					projectId,
+				},
+				select: {
+					id: true,
+					branch: true,
+					commitId: true,
+					status: true,
+					createdAt: true,
+				},
+				orderBy: {
+					createdAt: "desc",
+				},
+			});
+
+			return res.status(200).json(deployments);
+		} catch (error) {
+			const typedError = toTypedPrismaError(error);
+			if (typedError !== null) {
+				return res.status(400).json({error: typedError});
+			}
+			return res.status(500).json({message: "Error fetching deployments"});
+		}
 	});
 
 	return router;

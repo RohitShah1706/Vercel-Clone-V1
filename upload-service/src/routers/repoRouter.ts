@@ -10,6 +10,7 @@ interface Repo {
 	clone_url: string;
 	visibility: string;
 	default_branch: string;
+	last_commit_id: string | null;
 }
 
 const router = Router();
@@ -43,14 +44,33 @@ router.get("/", authenticateGithub, async (req, res) => {
 					page: page,
 				});
 
-				const repos: Repo[] = data.map((repo: any) => ({
-					name: repo.name,
-					full_name: repo.full_name,
-					updated_at: repo.updated_at,
-					clone_url: repo.clone_url,
-					visibility: repo.visibility,
-					default_branch: repo.default_branch,
-				}));
+				const repos: Repo[] = await Promise.all(
+					data.map(async (repo: any) => {
+						let lastCommitSha = null;
+						try {
+							const commits = await octokit.repos.listCommits({
+								owner: repo.owner.login,
+								repo: repo.name,
+								per_page: 1,
+							});
+							if (commits.data.length > 0) {
+								lastCommitSha = commits.data[0].sha;
+							}
+						} catch (error) {
+							console.error(`Failed to get commits for ${repo.full_name}`);
+						}
+
+						return {
+							name: repo.name,
+							full_name: repo.full_name,
+							updated_at: repo.updated_at,
+							clone_url: repo.clone_url,
+							visibility: repo.visibility,
+							default_branch: repo.default_branch,
+							last_commit_id: lastCommitSha,
+						};
+					})
+				);
 
 				allRepos = [...allRepos, ...repos];
 				if (data.length < 100) {

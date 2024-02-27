@@ -406,8 +406,9 @@ Those files include:
 - `src/cryptoUtis.ts`
 - `src/file.ts`
 
+TODO: remove boilerplate code of prisma catching error & other stuff from project
+TODO: use rootDir while building the project
 TODO: build a Github app to install on user's repositories directly: https://medium.com/swlh/building-the-first-github-app-3ea67a76c19a
-TODO: add routes to get decrypted values of envVars, update, delete, add new envVars etc.
 TODO: shift to using projectId instead of deploymentId while storing in S3
 TODO: document why used Apache Kafka over RabbitMQ
 Resources:
@@ -415,8 +416,6 @@ Resources:
 1.  https://www.youtube.com/watch?v=Ch5VhJzaoaI
 2.  https://www.youtube.com/watch?v=UNUz1-msbOM
 
-TODO: use rootDir while building the project
-TODO: remove boilerplate code of prisma catching error & other stuff from project
 TODO: see how to create hooks using Octokit
 TODO: use redis only as caching layer: remove publish tasks & status onto queue
 TODO: add getOrSetCache function & use redis as caching: for /status of "upload-server"

@@ -26,6 +26,7 @@ app.use("/repos", require("./routers/repoRouter").default);
 app.use("/users", require("./routers/userRouter").default);
 app.use("/projects", require("./routers/projectRouter").default);
 app.use("/logs", require("./routers/logRouter").default);
+app.use("/envvars", require("./routers/envVarRouter").default);
 app.use(
 	"/deployments",
 	// ! pass the publisher to the deploymentRouter so that it can publish messages to the redis server
@@ -100,15 +101,15 @@ const startServer = async () => {
 	try {
 		await publisher.connect();
 		console.log("Connected to Redis");
-		await producer.connect();
-		await consumer.connect();
-		console.log("Connected to Kafka");
+		// await producer.connect();
+		// await consumer.connect();
+		// console.log("Connected to Kafka");
 		await prismaClient.$connect();
 		console.log("Connected to Postgresql");
 		app.listen(PORT, () => {
 			console.log(`Server is running on port ${PORT}`);
 		});
-		initKafkaConsumer();
+		// initKafkaConsumer();
 	} catch (error) {
 		// ! exit gracefully
 		console.log(error);

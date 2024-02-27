@@ -26,6 +26,7 @@ model EnvVar {
   project_id     String
   Project        Project @relation(fields: [project_id], references: [id])
 
+  @@unique([key, project_id])
   @@index([project_id])
 }
 

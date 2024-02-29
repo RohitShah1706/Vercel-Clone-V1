@@ -331,7 +331,7 @@ Name:    ec2.rohitshah1706.tech
 Address:  43.205.119.247
 ```
 
-3. Update Nginx Configurations to setup a reverse proxy & redirect our application toi port 3000 (for this example). Edit the file at `/etc/nginx/sites-available/default`
+3. Update Nginx Configurations to setup a reverse proxy & redirect our application to port 3000 (for this example). Edit the file at `/etc/nginx/sites-available/default`
 
 ```nginx
 server {

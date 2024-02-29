@@ -13,8 +13,8 @@ export async function GET(req, res) {
 	// ! to demonstrate that server session is available to all server-side routes
 	const session = await getServerSession(options);
 
-	// console.log("session", session);
-	// console.log("token", token);
+	console.log("session", session);
+	console.log("token", token);
 
 	return NextResponse.json({
 		name: session?.user?.name ?? "Not Logged In",

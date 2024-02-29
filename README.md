@@ -303,6 +303,90 @@ export const options = {
 
 ---
 
+## SSL Certificate Setup and Deployment
+
+**References**:
+
+1. [Deploy a Node.js Application on AWS EC2 with Nginx with SSL](https://medium.com/@chiragmehta900/deploy-a-node-js-application-on-aws-ec2-with-nginx-with-ssl-47fb163d0909)
+
+2. [How To Use Certbot Standalone Mode to Retrieve Let's Encrypt SSL Certificates on Ubuntu 20.04](https://www.digitalocean.com/community/tutorials/how-to-use-certbot-standalone-mode-to-retrieve-let-s-encrypt-ssl-certificates-on-ubuntu-20-04)
+
+**Steps taken**:
+
+1. Added A records for the subdomain ec2.rohitshah1706.tech pointing to the EC2 instance's IP address (e.g., 43.205.119.247).
+
+   ![alt text](screenshots/ssl_setup_01.png)
+
+2. Verify the A record using `nslookup` command to check if the subdomain is pointing to the correct IP address.
+
+```bash
+nslookup ec2.rohitshah1706.tech
+
+# Output
+Server:  one.one.one.one
+Address:  1.1.1.1
+
+Non-authoritative answer:
+Name:    ec2.rohitshah1706.tech
+Address:  43.205.119.247
+```
+
+3. Update Nginx Configurations to setup a reverse proxy & redirect our application toi port 3000 (for this example). Edit the file at `/etc/nginx/sites-available/default`
+
+```nginx
+server {
+	server_name ec2.rohitshah1706.tech;
+
+	location / {
+		proxy_pass http://localhost:3000;
+		proxy_http_version 1.1;
+		proxy_set_header Upgrade $http_upgrade;
+		proxy_set_header Connection 'upgrade';
+		proxy_set_header Host $host;
+		proxy_cache_bypass $http_upgrade;
+	}
+}
+```
+
+4. Verify the Nginx configuration and restart the Nginx service.
+
+```bash
+# Verify the Nginx configuration
+sudo nginx -t
+
+# Restart the Nginx service
+sudo systemctl restart nginx
+```
+
+5. Install Certbot and request a new SSL certificate for the subdomain.
+
+```bash
+# Install snapd
+sudo apt-get update
+sudo snap install core
+sudo snap refresh core
+
+# Remove the certbot old version if installed
+sudo apt-get remove certbot
+
+# Install certbot
+sudo snap install --classic certbot
+
+# Link - create a symlink to the new version
+sudo ln -s /snap/bin/certbot /usr/bin/certbot
+
+# Running Certbot with the --nginx plugin
+# will take care of reconfiguring Nginx
+# and reloading the config whenever necessary
+sudo certbot --nginx
+```
+
+6. Run a basic http server on port 3000 to check if our subdomain is now accessible via HTTPS.
+
+**NOTE**: make sure that EC2 instance security group allows traffic on port 443 for https.
+
+---
+
 ## Errors faced
 
 ### Have to use `Promise.all` to wait for all files to be uploaded to S3 before pushing to Redis queue
@@ -443,5 +527,11 @@ TODO: create frontend basic template
 8. [Upload or download large files to and from Amazon S3 using an AWS SDK](https://docs.aws.amazon.com/AmazonS3/latest/userguide/example_s3_Scenario_UsingLargeFiles_section.html)
 
 9. [KeyCDN for Performance testing](https://tools.keycdn.com/performance)
+
+10. SSL Certificate Setup and Deployment: (refer to [section](#ssl-certificate-setup-and-deployment) for more details)
+
+    - [Deploy a Node.js Application on AWS EC2 with Nginx with SSL](https://medium.com/@chiragmehta900/deploy-a-node-js-application-on-aws-ec2-with-nginx-with-ssl-47fb163d0909)
+
+    - [How To Use Certbot Standalone Mode to Retrieve Let's Encrypt SSL Certificates on Ubuntu 20.04](https://www.digitalocean.com/community/tutorials/how-to-use-certbot-standalone-mode-to-retrieve-let-s-encrypt-ssl-certificates-on-ubuntu-20-04)
 
 ---

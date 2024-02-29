@@ -19,7 +19,7 @@ export default async function Home(req) {
 				<h1>List of private repositories</h1>
 				<br />
 				<button>Get list of private repositories</button>
-				<RepoList />
+				{/* <RepoList /> */}
 			</div>
 		</>
 	);

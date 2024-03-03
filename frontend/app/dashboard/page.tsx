@@ -13,12 +13,13 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { GridIcon, PlusIcon, RowsIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { DataTable } from "./_components/projects-table";
+import { ProjectsTable } from "./_components/projects-table";
 import {
 	DeploymentStatus,
 	Project,
 	columns,
 } from "./_components/project-columns";
+import { ProjectsGrid } from "./_components/projects-grid";
 
 export default function DashboardPage() {
 	const [search, setSearch] = useState("");
@@ -26,6 +27,42 @@ export default function DashboardPage() {
 	const [view, setView] = useState("grid");
 
 	const [projects, setProjects] = useState<Project[]>([
+		{
+			id: "f0a1474b-5bed-47fd-9145-5100122dbcac",
+			name: "project-1",
+			githubProjectName: "RohitShah1706/vite_starter_template",
+			lastDeployment: {
+				id: "f0a1474b-5bed-47fd-9145-5100122dbcac",
+				branch: "main",
+				commitId: "548fabaf2b00709e012d803e0636b543e9902602",
+				status: DeploymentStatus.SUCCESS,
+				createdAt: new Date("2024-01-05T14:48:00.000Z"),
+			},
+			buildCmd: "npm run build",
+			installCmd: "npm install",
+			outDir: "dist",
+			rootDir: ".",
+			envVars: null,
+			user: null,
+		},
+		{
+			id: "f0a1474b-5bed-47fd-9145-5100122dbcac",
+			name: "project-1",
+			githubProjectName: "RohitShah1706/vite_starter_template",
+			lastDeployment: {
+				id: "f0a1474b-5bed-47fd-9145-5100122dbcac",
+				branch: "main",
+				commitId: "548fabaf2b00709e012d803e0636b543e9902602",
+				status: DeploymentStatus.SUCCESS,
+				createdAt: new Date("2024-01-05T14:48:00.000Z"),
+			},
+			buildCmd: "npm run build",
+			installCmd: "npm install",
+			outDir: "dist",
+			rootDir: ".",
+			envVars: null,
+			user: null,
+		},
 		{
 			id: "f0a1474b-5bed-47fd-9145-5100122dbcac",
 			name: "project-1",
@@ -156,12 +193,15 @@ export default function DashboardPage() {
 
 			{/* ! DISPLAY PROJECTS */}
 			<div className="hidden md:block">
-				{view === "table" && <DataTable columns={columns} data={projects} />}
-				{view === "grid" && <div></div>}
+				{view === "table" && (
+					<ProjectsTable columns={columns} data={projects} />
+				)}
+				{view === "grid" && <ProjectsGrid projects={projects} />}
 			</div>
 
 			<div className="block md:hidden">
 				{/* ! TODO: DISPLAY cards but with smaller grid */}
+				<ProjectsGrid projects={projects} />
 			</div>
 		</div>
 	);

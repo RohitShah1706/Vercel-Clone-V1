@@ -16,6 +16,7 @@ import { ExternalLink, SettingsIcon } from "lucide-react";
 import { ThemeModeToggle } from "./theme-mode-toggle";
 import { signIn, signOut, useSession } from "next-auth/react";
 import { Button } from "../ui/button";
+import { redirect } from "next/navigation";
 
 interface User {
 	name?: string | null | undefined;
@@ -86,8 +87,6 @@ const UserDropdownMenu: React.FC<UserDropdownMenuProps> = ({ user }) => {
 export const Navbar = () => {
 	const { data: session } = useSession();
 
-	const user = session?.user;
-
 	return (
 		<nav className="sticky top-0 w-full border-b border-gray-200 dark:border-gray-900 bg-[#FEFFFE] dark:bg-[#0B0B0A] z-10">
 			<div className="container flex flex-wrap items-center justify-between p-3">
@@ -95,9 +94,18 @@ export const Navbar = () => {
 					href="/"
 					className="flex items-center space-x-3 rtl:space-x-reverse"
 				>
-					{/* TODO: update with dark and light themed logos here */}
-					<Image src="/next.svg" alt="logo" width="64" height="64" />
-					<span className="hidden sm:block self-center sm:text-3xl md:text-4xl font-semibold whitespace-nowrap dark:text-white">
+					<div className="block dark:hidden">
+						<Image src="/vercel.svg" alt="github" width={32} height={32} />
+					</div>
+					<div className="hidden dark:block">
+						<Image
+							src="/vercel-white.svg"
+							alt="github"
+							width={32}
+							height={32}
+						/>
+					</div>
+					<span className="hidden sm:block self-center sm:text-3xl md:text-4xl font-semibold whitespace-nowrap dark:text-white text-black">
 						Vercel
 					</span>
 				</Link>

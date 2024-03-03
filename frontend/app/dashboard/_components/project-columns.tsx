@@ -2,7 +2,8 @@
 
 import { ColumnDef } from "@tanstack/react-table";
 import { formatRelative } from "date-fns";
-import { GitBranch, Github } from "lucide-react";
+import { GitBranch } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 
 // function UserCell({ userId }: { userId: Id<"users"> }) {
@@ -67,7 +68,7 @@ export const columns: ColumnDef<Project>[] = [
 					</Link>
 					<Link
 						href={`${process.env.NEXT_PUBLIC_PROXY_SERVER_BASE_URL}/${row.original.id}/`}
-						className="overflow-auto whitespace-normal underline"
+						className="overflow-auto whitespace-normal underline text-gray-600 dark:text-gray-300"
 						target="_blank"
 					>
 						{row.original.id}
@@ -80,13 +81,23 @@ export const columns: ColumnDef<Project>[] = [
 		header: "Deployment",
 		cell: ({ row }) => {
 			return (
-				<div className="flex flex-col gap-1">
+				<div className="flex flex-col gap-2">
 					<Link
 						href={`https://github.com/${row.original.githubProjectName}/tree/${row.original.lastDeployment?.commitId}`}
-						className="overflow-auto whitespace-normal flex items-center gap-2 bg-[#FAFBFB] dark:bg-gray-950 rounded-md p-1 font-semibold w-max"
+						className="overflow-auto whitespace-normal flex items-center gap-2 bg-[#FAFBFB] dark:bg-gray-950 rounded-md px-3 py-1 font-semibold w-max"
 						target="_blank"
 					>
-						<Github className="w-4 h-4 md:w-5 md:h-5" />{" "}
+						<div className="block dark:hidden">
+							<Image src="/github.svg" alt="github" width={20} height={20} />
+						</div>
+						<div className="hidden dark:block">
+							<Image
+								src="/github-white.svg"
+								alt="github"
+								width={20}
+								height={20}
+							/>
+						</div>
 						{row.original.githubProjectName}
 					</Link>
 					<div>
@@ -95,10 +106,10 @@ export const columns: ColumnDef<Project>[] = [
 								new Date(row.original.lastDeployment.createdAt),
 								new Date()
 							)}
-					</div>
-					<div className="flex items-center gap-2">
-						{`on ${row.original.lastDeployment?.branch}`}
-						<GitBranch className="w-4 h-4 md:w-5 md:h-5" />
+						<div className="flex items-center gap-2">
+							{`on ${row.original.lastDeployment?.branch}`}
+							<GitBranch className="w-4 h-4 md:w-5 md:h-5" />
+						</div>
 					</div>
 				</div>
 			);

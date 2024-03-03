@@ -8,6 +8,7 @@ import { Navbar } from "@/components/custom/navbar";
 
 import { getServerSession } from "next-auth";
 import SessionProvider from "@/components/providers/session-provider";
+import Head from "next/head";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -16,20 +17,20 @@ export const metadata: Metadata = {
 	description:
 		"Vercel Clone is the Frontend Cloud. Upload, deploy, and manage your own frontend.",
 	// TODO: add vercel dark & light theme logo
-	// icons: {
-	// 	icon: [
-	// 		{
-	// 			media: "(prefers-color-scheme: light)",
-	// 			url: "/logo.svg",
-	// 			href: "/logo.svg",
-	// 		},
-	// 		{
-	// 			media: "(prefers-color-scheme: dark)",
-	// 			url: "/logo-dark.svg",
-	// 			href: "/logo-dark.svg",
-	// 		},
-	// 	],
-	// },
+	icons: {
+		icon: [
+			{
+				media: "(prefers-color-scheme: light)",
+				url: "/logo.svg",
+				href: "/logo.svg",
+			},
+			{
+				media: "(prefers-color-scheme: dark)",
+				url: "/logo-dark.svg",
+				href: "/logo-dark.svg",
+			},
+		],
+	},
 };
 
 export default async function RootLayout({

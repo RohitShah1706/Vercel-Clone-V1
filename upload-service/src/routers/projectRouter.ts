@@ -1,15 +1,15 @@
-import {Router} from "express";
-import {z} from "zod";
+import { Router } from "express";
+import { z } from "zod";
 
-import {prismaClient} from "../connection/prisma";
-import {authenticateGithub} from "../middlewares";
-import {toTypedPrismaError} from "../utils/prismaErrorMap";
-import {encrypt} from "../utils/cryptoUtils";
+import { prismaClient } from "../connection/prisma";
+import { authenticateGithub } from "../middlewares";
+import { toTypedPrismaError } from "../utils/prismaErrorMap";
+import { encrypt } from "../utils/cryptoUtils";
 
 const router = Router();
 
 router.get("/:id", authenticateGithub, async (req, res) => {
-	const {id} = req.params;
+	const { id } = req.params;
 	const project = await prismaClient.project.findUnique({
 		where: {
 			id,
@@ -32,6 +32,9 @@ router.get("/:id", authenticateGithub, async (req, res) => {
 				select: {
 					id: true,
 					status: true,
+					branch: true,
+					commitId: true,
+					createdAt: true,
 				},
 			},
 			rootDir: true,
@@ -42,11 +45,11 @@ router.get("/:id", authenticateGithub, async (req, res) => {
 	});
 
 	if (project === null) {
-		return res.status(404).json({message: "Project not found"});
+		return res.status(404).json({ message: "Project not found" });
 	}
 
 	if (project.user.email !== res.locals.emailId) {
-		return res.status(403).json({message: "Forbidden"});
+		return res.status(403).json({ message: "Forbidden" });
 	}
 
 	return res.json(project);
@@ -65,7 +68,9 @@ router.post("/", authenticateGithub, async (req, res) => {
 	const parsed = CreateProjectRequestBody.safeParse(req.body);
 
 	if (!parsed.success) {
-		return res.status(400).json({errors: parsed.error.formErrors.fieldErrors});
+		return res
+			.status(400)
+			.json({ errors: parsed.error.formErrors.fieldErrors });
 	}
 
 	const {
@@ -130,14 +135,14 @@ router.post("/", authenticateGithub, async (req, res) => {
 			},
 		});
 
-		return res.status(201).json({project, message: "Project created"});
+		return res.status(201).json({ project, message: "Project created" });
 	} catch (error) {
 		const typedError = toTypedPrismaError(error);
 		if (typedError !== null) {
-			return res.status(400).json({error: typedError});
+			return res.status(400).json({ error: typedError });
 		}
 		console.error("Error creating project:", error);
-		return res.status(500).json({message: "Error creating project"});
+		return res.status(500).json({ message: "Error creating project" });
 	}
 });
 
@@ -153,10 +158,12 @@ router.put("/:id", authenticateGithub, async (req, res) => {
 	const parsed = UpdateProjectRequestBody.safeParse(req.body);
 
 	if (!parsed.success) {
-		return res.status(400).json({errors: parsed.error.formErrors.fieldErrors});
+		return res
+			.status(400)
+			.json({ errors: parsed.error.formErrors.fieldErrors });
 	}
 
-	const {name, githubProjectName, rootDir, outDir, installCmd, buildCmd} =
+	const { name, githubProjectName, rootDir, outDir, installCmd, buildCmd } =
 		parsed.data;
 
 	const projectId = req.params.id;
@@ -173,11 +180,11 @@ router.put("/:id", authenticateGithub, async (req, res) => {
 		});
 
 		if (existingProject === null) {
-			return res.status(404).json({message: "Project not found"});
+			return res.status(404).json({ message: "Project not found" });
 		}
 
 		if (existingProject.userEmailId !== emailId) {
-			return res.status(403).json({message: "Forbidden"});
+			return res.status(403).json({ message: "Forbidden" });
 		}
 
 		const project = await prismaClient.project.update({
@@ -210,15 +217,41 @@ router.put("/:id", authenticateGithub, async (req, res) => {
 			},
 		});
 
-		return res.status(200).json({project, message: "Project updated"});
+		return res.status(200).json({ project, message: "Project updated" });
 	} catch (error) {
 		const typedError = toTypedPrismaError(error);
 		if (typedError !== null) {
-			return res.status(400).json({error: typedError});
+			return res.status(400).json({ error: typedError });
 		}
 		console.error("Error updating project:", error);
-		return res.status(500).json({message: "Error updating project"});
+		return res.status(500).json({ message: "Error updating project" });
 	}
+});
+
+router.get("/", async (req, res) => {
+	const emailId = res.locals.emailId as string;
+
+	const projects = await prismaClient.project.findMany({
+		where: {
+			userEmailId: emailId,
+		},
+		select: {
+			id: true,
+			name: true,
+			githubProjectName: true,
+			lastDeployment: {
+				select: {
+					id: true,
+					status: true,
+					commitId: true,
+					branch: true,
+					createdAt: true,
+				},
+			},
+		},
+	});
+
+	return res.json(projects);
 });
 
 export default router;

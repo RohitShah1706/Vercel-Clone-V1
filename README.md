@@ -289,7 +289,7 @@ export const options = {
 		maxAge: 60 * 60 * 1, // ! one hour
 	},
 	callbacks: {
-		jwt: async ({token, user, account}) => {
+		jwt: async ({ token, user, account }) => {
 			if (account && account.access_token) {
 				token.accessToken = account.access_token;
 			}
@@ -471,7 +471,7 @@ mongoClient.connect(url, function (err, client) {
 			const encrypted = encrypt(decrypted, newKey);
 
 			// Update envVars in MongoDB
-			collection.updateOne({_id: doc._id}, {$set: {envVars: encrypted}});
+			collection.updateOne({ _id: doc._id }, { $set: { envVars: encrypted } });
 		});
 	});
 

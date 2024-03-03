@@ -6,6 +6,9 @@ import { Toaster } from "@/components/ui/toaster";
 import "./globals.css";
 import { Navbar } from "@/components/custom/navbar";
 
+import { getServerSession } from "next-auth";
+import SessionProvider from "@/components/providers/session-provider";
+
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -29,25 +32,29 @@ export const metadata: Metadata = {
 	// },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
 	children,
 }: Readonly<{
 	children: React.ReactNode;
 }>) {
+	const session = await getServerSession();
+
 	return (
 		<html lang="en">
 			<body className={inter.className}>
-				<ThemeProvider
-					attribute="class"
-					defaultTheme="system"
-					enableSystem
-					disableTransitionOnChange
-					storageKey="vercel-clone-theme"
-				>
-					<Navbar />
-					<Toaster />
-					{children}
-				</ThemeProvider>
+				<SessionProvider session={session}>
+					<ThemeProvider
+						attribute="class"
+						defaultTheme="system"
+						enableSystem
+						disableTransitionOnChange
+						storageKey="vercel-clone-theme"
+					>
+						<Navbar />
+						<Toaster />
+						<div className="mt-auto">{children}</div>
+					</ThemeProvider>
+				</SessionProvider>
 			</body>
 		</html>
 	);

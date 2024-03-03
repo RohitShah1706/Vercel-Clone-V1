@@ -1,3 +1,5 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
@@ -10,58 +12,109 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, SettingsIcon } from "lucide-react";
 import { ThemeModeToggle } from "./theme-mode-toggle";
+import { signIn, signOut, useSession } from "next-auth/react";
+import { Button } from "../ui/button";
+
+interface User {
+	name?: string | null | undefined;
+	email?: string | null | undefined;
+	image?: string | null | undefined;
+}
+
+interface UserDropdownMenuProps {
+	user: User;
+}
+
+const UserDropdownMenu: React.FC<UserDropdownMenuProps> = ({ user }) => {
+	return (
+		<DropdownMenu>
+			<DropdownMenuTrigger>
+				<Avatar className="w-8 h-8 md:w-10 md:h-10">
+					{user?.image && <AvatarImage src={user?.image} />}
+					{user?.name && !user?.image && (
+						<AvatarFallback>{user.name[0]}</AvatarFallback>
+					)}
+				</Avatar>
+			</DropdownMenuTrigger>
+			<DropdownMenuContent className="w-52 dark:text-gray-300">
+				<DropdownMenuItem className="text-xs md:text-sm">
+					{user.email}
+				</DropdownMenuItem>
+				<DropdownMenuItem className="text-xs md:text-sm">
+					<Link href="/dashboard">Dashboard</Link>
+				</DropdownMenuItem>
+				<DropdownMenuItem className="text-xs md:text-sm">
+					<Link
+						href="/settings"
+						className="flex items-center justify-between w-full"
+					>
+						Settings <SettingsIcon className="w-4 h-4 md:w-5 md:h-5" />
+					</Link>
+				</DropdownMenuItem>
+				<DropdownMenuSeparator />
+
+				<DropdownMenuItem className="text-xs md:text-sm flex items-center justify-between">
+					Menu
+					<kbd className="ml-auto pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
+						<span className="text-xs md:text-sm">Ctrl K</span>
+					</kbd>
+				</DropdownMenuItem>
+				<DropdownMenuSeparator />
+
+				<DropdownMenuItem className="text-xs md:text-sm">
+					<Link href="/" className="flex items-center justify-between w-full">
+						Vercel Homepage <ExternalLink className="w-4 h-4 md:w-5 md:h-5" />
+					</Link>
+				</DropdownMenuItem>
+
+				<DropdownMenuItem
+					className="text-xs md:text-sm cursor-pointer"
+					onClick={() => {
+						console.log("Logging out");
+						signOut();
+					}}
+				>
+					Logout
+				</DropdownMenuItem>
+			</DropdownMenuContent>
+		</DropdownMenu>
+	);
+};
 
 export const Navbar = () => {
+	const { data: session } = useSession();
+
+	const user = session?.user;
+
 	return (
-		<nav className="fixed w-full bg-white border-gray-200 dark:bg-[#0f0f0f] px-2">
-			<div className="max-w-screen-4xl flex flex-wrap items-center justify-between mx-auto p-2 mt-1">
+		<nav className="sticky top-0 w-full border-gray-200 bg-[#FAFBFB] dark:bg-[#0f0f0f] z-10">
+			<div className="container flex flex-wrap items-center justify-between p-3">
 				<Link
 					href="/"
 					className="flex items-center space-x-3 rtl:space-x-reverse"
 				>
 					{/* TODO: update with dark and light themed logos here */}
-					<Image src="/next.svg" alt="logo" width="8" height="8" />
-					<span className="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">
+					<Image src="/next.svg" alt="logo" width="64" height="64" />
+					<span className="hidden sm:block self-center sm:text-3xl md:text-4xl font-semibold whitespace-nowrap dark:text-white">
 						Vercel
 					</span>
-					{/* TODO: add username or email id here */}
 				</Link>
+				<div className="flex items-center gap-2">
+					<ThemeModeToggle />
+					{session?.user ? (
+						<UserDropdownMenu user={session.user} />
+					) : (
+						<div className="flex items-center gap-2">
+							<Button onClick={() => signIn("github")}>Log In</Button>
 
-				<DropdownMenu>
-					<DropdownMenuTrigger>
-						<Avatar className="w-8 h-8">
-							<AvatarImage src="https://github.com/shadcn.png" />
-							<AvatarFallback>CN</AvatarFallback>
-						</Avatar>
-					</DropdownMenuTrigger>
-					<DropdownMenuContent className="w-48 dark:text-gray-300">
-						<DropdownMenuItem className="text-xs">
-							{"rlshah03@gmail.com"}
-						</DropdownMenuItem>
-						<DropdownMenuItem className="text-xs">
-							<Link href="/dashboard">Dashboard</Link>
-						</DropdownMenuItem>
-						<DropdownMenuSeparator />
-
-						<DropdownMenuItem className="text-xs flex items-center justify-between">
-							Command Menu
-							<kbd className="ml-auto pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
-								<span className="text-xs">Ctrl K</span>
-							</kbd>
-						</DropdownMenuItem>
-						<DropdownMenuItem className="text-xs flex items-center justify-between">
-							Theme <ThemeModeToggle />
-						</DropdownMenuItem>
-						<DropdownMenuSeparator />
-
-						<DropdownMenuItem className="text-xs flex items-center justify-between">
-							Vercel Homepage <ExternalLink className="w-4 h-4" />
-						</DropdownMenuItem>
-						<DropdownMenuItem className="text-xs">Logout</DropdownMenuItem>
-					</DropdownMenuContent>
-				</DropdownMenu>
+							<Button onClick={() => signIn("github")} variant="outline">
+								Sign Up
+							</Button>
+						</div>
+					)}
+				</div>
 			</div>
 		</nav>
 	);

@@ -93,6 +93,7 @@ export default function DashboardPage() {
 						onChange={(e) => {
 							setSearch(e.target.value);
 						}}
+						className="bg-[#FEFFFE] dark:bg-[#0B0B0A]"
 					/>
 				</div>
 
@@ -103,10 +104,10 @@ export default function DashboardPage() {
 							setSortBy(value);
 						}}
 					>
-						<SelectTrigger className="w-[180px] font-semibold">
+						<SelectTrigger className="w-[180px] font-semibold bg-[#FEFFFE] dark:bg-[#0B0B0A]">
 							<SelectValue placeholder="Sort by name" />
 						</SelectTrigger>
-						<SelectContent>
+						<SelectContent className="bg-[#FEFFFE] dark:bg-[#0B0B0A]">
 							<SelectItem value="name">Sort by name</SelectItem>
 							<SelectItem value="activity">Sort by activity</SelectItem>
 						</SelectContent>
@@ -122,10 +123,16 @@ export default function DashboardPage() {
 						}}
 					>
 						<TabsList>
-							<TabsTrigger value="grid" className="flex items-center gap-2">
+							<TabsTrigger
+								value="grid"
+								className="flex items-center gap-2 bg-[#FEFFFE] dark:bg-[#0B0B0A]"
+							>
 								<GridIcon className="w-4 h-4 md:w-5 md:h-5" /> Grid
 							</TabsTrigger>
-							<TabsTrigger value="table" className="flex items-center gap-2">
+							<TabsTrigger
+								value="table"
+								className="flex items-center gap-2 bg-[#FEFFFE] dark:bg-[#0B0B0A]"
+							>
 								<RowsIcon className="w-4 h-4 md:w-5 md:h-5" /> Table
 							</TabsTrigger>
 						</TabsList>
@@ -150,8 +157,7 @@ export default function DashboardPage() {
 			{/* ! DISPLAY PROJECTS */}
 			<div className="hidden md:block">
 				{view === "table" && <DataTable columns={columns} data={projects} />}
-				{view === "grid" && <div>
-					</div>}
+				{view === "grid" && <div></div>}
 			</div>
 
 			<div className="block md:hidden">

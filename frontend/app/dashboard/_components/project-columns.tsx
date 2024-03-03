@@ -83,7 +83,7 @@ export const columns: ColumnDef<Project>[] = [
 				<div className="flex flex-col gap-1">
 					<Link
 						href={`https://github.com/${row.original.githubProjectName}/tree/${row.original.lastDeployment?.commitId}`}
-						className="overflow-auto whitespace-normal flex items-center gap-2 bg-gray-200 rounded-md p-1 font-semibold w-max"
+						className="overflow-auto whitespace-normal flex items-center gap-2 bg-[#FAFBFB] dark:bg-gray-950 rounded-md p-1 font-semibold w-max"
 						target="_blank"
 					>
 						<Github className="w-4 h-4 md:w-5 md:h-5" />{" "}

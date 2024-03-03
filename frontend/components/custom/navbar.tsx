@@ -89,7 +89,7 @@ export const Navbar = () => {
 	const user = session?.user;
 
 	return (
-		<nav className="sticky top-0 w-full border-gray-200 bg-[#FAFBFB] dark:bg-[#0f0f0f] z-10">
+		<nav className="sticky top-0 w-full border-b border-gray-200 dark:border-gray-900 bg-[#FEFFFE] dark:bg-[#0B0B0A] z-10">
 			<div className="container flex flex-wrap items-center justify-between p-3">
 				<Link
 					href="/"

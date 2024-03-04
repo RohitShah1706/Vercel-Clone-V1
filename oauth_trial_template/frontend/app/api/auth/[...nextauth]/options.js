@@ -20,11 +20,15 @@ export const options = {
 		maxAge: 60 * 60 * 1, // ! one hour
 	},
 	callbacks: {
-		jwt: async ({token, user, account}) => {
+		jwt: async ({ token, user, account }) => {
 			if (account && account.access_token) {
 				token.accessToken = account.access_token;
 			}
 			return token;
+		},
+		session: async ({ session, token }) => {
+			session.accessToken = token.accessToken;
+			return session;
 		},
 	},
 };

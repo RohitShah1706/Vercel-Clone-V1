@@ -1,8 +1,8 @@
-import {getServerSession} from "next-auth";
-import {NextResponse} from "next/server";
-import {getToken} from "next-auth/jwt";
+import { getServerSession } from "next-auth";
+import { NextResponse } from "next/server";
+import { getToken } from "next-auth/jwt";
 
-import {options} from "../auth/[...nextauth]/options";
+import { options } from "../auth/[...nextauth]/options";
 
 export async function GET(req, res) {
 	const token = await getToken({
@@ -14,7 +14,7 @@ export async function GET(req, res) {
 	const session = await getServerSession(options);
 
 	console.log("session", session);
-	console.log("token", token);
+	// console.log("token", token);
 
 	return NextResponse.json({
 		name: session?.user?.name ?? "Not Logged In",

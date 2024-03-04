@@ -1,5 +1,5 @@
-import {Request, Response, NextFunction} from "express";
-import {Octokit} from "@octokit/rest";
+import { Request, Response, NextFunction } from "express";
+import { Octokit } from "@octokit/rest";
 
 const authenticateGithub = async (
 	req: Request,
@@ -9,12 +9,12 @@ const authenticateGithub = async (
 	const accessToken = req.headers.authorization;
 
 	if (!accessToken) {
-		return res.status(401).json({error: "Unauthorized"});
+		return res.status(401).json({ error: "Unauthorized" });
 	}
 
 	// ! Validate and verify the access token
 	try {
-		const octokit = new Octokit({auth: accessToken});
+		const octokit = new Octokit({ auth: accessToken });
 		const authenticatedUser =
 			await octokit.users.listEmailsForAuthenticatedUser();
 		var emailId = "";
@@ -28,8 +28,8 @@ const authenticateGithub = async (
 		next();
 	} catch (error) {
 		// console.error("Error validating access token:", error.message);
-		res.status(401).json({error: "Unauthorized"});
+		res.status(401).json({ error: "Unauthorized" });
 	}
 };
 
-export {authenticateGithub};
+export { authenticateGithub };

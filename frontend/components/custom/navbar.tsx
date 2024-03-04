@@ -16,7 +16,6 @@ import { ExternalLink, SettingsIcon } from "lucide-react";
 import { ThemeModeToggle } from "./theme-mode-toggle";
 import { signIn, signOut, useSession } from "next-auth/react";
 import { Button } from "../ui/button";
-import { redirect } from "next/navigation";
 
 interface User {
 	name?: string | null | undefined;

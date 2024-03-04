@@ -1,6 +1,6 @@
-import {Fira_Code} from "next/font/google";
+import { Fira_Code } from "next/font/google";
 
-const firaCode = Fira_Code({subsets: ["latin"]});
+const firaCode = Fira_Code({ subsets: ["latin"] });
 
 const page = () => {
 	const logs = [

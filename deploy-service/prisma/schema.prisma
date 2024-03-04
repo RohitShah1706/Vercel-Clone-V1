@@ -47,9 +47,10 @@ model Project {
 }
 
 model User {
-  id      String    @id
-  email   String    @unique
-  Project Project[]
+  id       String    @id
+  email    String    @unique
+  username String    @unique
+  Project  Project[]
 
   @@index([email])
 }

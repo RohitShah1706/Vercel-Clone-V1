@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Project } from "./project-columns";
+import { Project } from "@/app/types";
 import { GitBranch } from "lucide-react";
 import { formatRelative } from "date-fns";
 import Image from "next/image";
@@ -28,10 +28,14 @@ export const ProjectsGrid = ({ projects }: { projects: Project[] }) => {
 						</Link>
 					</div>
 
-					<div className="flex flex-col gap-4 overflow-auto whitespace-normal">
+					<div className="flex flex-col gap-4 overflow-hidden whitespace-normal">
 						<Link
-							href={`https://github.com/${project.githubProjectName}/tree/${project.lastDeployment?.commitId}`}
-							className="flex items-center gap-2 bg-[#FAFBFB] dark:bg-gray-950 rounded-lg px-3 py-1 font-semibold w-max text-sm md:text-base"
+							href={
+								project?.lastDeployment
+									? `https://github.com/${project.githubProjectName}/tree/${project.lastDeployment?.commitId}`
+									: `https://github.com/${project.githubProjectName}`
+							}
+							className="flex items-center gap-2 bg-[#FAFBFB] dark:bg-gray-950 rounded-lg px-3 py-1 font-semibold w-max text-sm md:text-base overflow-hidden"
 							target="_blank"
 						>
 							<div className="block dark:hidden">
@@ -53,10 +57,12 @@ export const ProjectsGrid = ({ projects }: { projects: Project[] }) => {
 									new Date(project.lastDeployment.createdAt),
 									new Date()
 								)}
-							<div className="flex items-center gap-2">
-								{`on ${project.lastDeployment?.branch}`}
-								<GitBranch className="w-4 h-4 md:w-5 md:h-5" />
-							</div>
+							{project.lastDeployment?.branch && (
+								<div className="flex items-center gap-2">
+									{`on ${project.lastDeployment.branch}`}
+									<GitBranch className="w-4 h-4 md:w-5 md:h-5" />
+								</div>
+							)}
 						</div>
 					</div>
 				</div>

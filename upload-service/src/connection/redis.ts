@@ -1,6 +1,11 @@
-import {createClient} from "redis";
+import { createClient } from "redis";
 
-import {REDIS_HOST, REDIS_PASSWORD, REDIS_PORT, REDIS_SECURE} from "../config";
+import {
+	REDIS_HOST,
+	REDIS_PASSWORD,
+	REDIS_PORT,
+	REDIS_SECURE,
+} from "../config";
 
 export const getRedisClient = () => {
 	const protocol = REDIS_SECURE === "true" ? "rediss" : "redis";

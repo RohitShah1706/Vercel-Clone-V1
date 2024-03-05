@@ -534,4 +534,6 @@ TODO: create frontend basic template
 
     - [How To Use Certbot Standalone Mode to Retrieve Let's Encrypt SSL Certificates on Ubuntu 20.04](https://www.digitalocean.com/community/tutorials/how-to-use-certbot-standalone-mode-to-retrieve-let-s-encrypt-ssl-certificates-on-ubuntu-20-04)
 
+11. [Next.js Server Actions & 5 awesome things you can do](https://www.youtube.com/watch?v=O94ESaJtHtM)
+
 ---

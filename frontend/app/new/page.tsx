@@ -20,17 +20,10 @@ export default function NewProjectPage() {
 	const [isLoading, setIsLoading] = useState<boolean>(true);
 
 	const [search, setSearch] = useState<string>("");
-	const [displayRepos, setDisplayRepos] = useState<Repository[]>(repos);
 	const [visibility, setVisibility] = useState<RepositoryVisibility>("public");
 
 	useEffect(() => {
-		const filteredRepos = repos.filter((repo) =>
-			repo.name.toLowerCase().includes(search.toLowerCase())
-		);
-		setDisplayRepos(filteredRepos);
-	}, [search, repos]);
-
-	useEffect(() => {
+		setSearch("");
 		const fetchRepos = async () => {
 			setIsLoading(true);
 			const repositories = await getRepositories(visibility);
@@ -44,6 +37,7 @@ export default function NewProjectPage() {
 	return (
 		<div className="container max-w-3xl lg:max-w-5xl flex flex-col">
 			<div className="mt-16 mb-16">
+				<div className="container"></div>
 				<h1 className="text-[40px] font-bold mb-2 leading-[50px]">{`Let's build something new.`}</h1>
 				<p className="text-gray-600 dark:text-gray-300">
 					To deploy a new Project, import an existing Git Repository from your
@@ -51,7 +45,7 @@ export default function NewProjectPage() {
 				</p>
 			</div>
 
-			<Card className="rounded-lg">
+			<Card className="rounded-lg mb-12">
 				<CardHeader>
 					<CardTitle className="text-center lg:text-left">
 						Import Git Repository
@@ -90,6 +84,7 @@ export default function NewProjectPage() {
 								onChange={(e) => {
 									setSearch(e.target.value);
 								}}
+								disabled={isLoading}
 							/>
 						</div>
 					</div>
@@ -98,9 +93,11 @@ export default function NewProjectPage() {
 						{!isLoading &&
 							repos &&
 							repos.length > 0 &&
-							displayRepos.map((repo) => (
-								<RepoCard key={repo.last_commit_id} repo={repo} />
-							))}
+							repos
+								.filter((repo) =>
+									repo.name.toLowerCase().includes(search.toLowerCase())
+								)
+								.map((repo, key) => <RepoCard key={key} repo={repo} />)}
 
 						{isLoading && (
 							<>

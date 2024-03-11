@@ -34,6 +34,7 @@ export function SettingsSidebarNav({
 					<p
 						key={item.value}
 						className={cn(
+							"w-52",
 							buttonVariants({ variant: "ghost" }),
 							activeTab === item.value
 								? "bg-muted hover:bg-muted"

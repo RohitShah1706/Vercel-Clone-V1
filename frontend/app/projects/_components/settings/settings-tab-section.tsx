@@ -49,7 +49,7 @@ export const SettingsTabSection = ({ project }: { project: Project }) => {
 							setActiveTab={setActiveTab}
 						/>
 					</aside>
-					<div className="flex-1 lg:max-w-2xl">
+					<div className="flex-1 lg:max-w-4xl">
 						{activeTab === "general" && (
 							<SettingsGeneralTab project={project} />
 						)}

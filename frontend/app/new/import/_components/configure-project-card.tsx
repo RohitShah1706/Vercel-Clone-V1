@@ -104,7 +104,7 @@ export const ConfigureProjectCard = ({
 			<CardHeader>
 				<CardTitle className="text-center lg:text-left px-2 py-4 -mb-2">
 					Configure Project
-					<hr className="border-t border-accents-2 mt-6 mr-16" />
+					<hr className="border-t mt-6 mr-16" />
 				</CardTitle>
 			</CardHeader>
 			<CardContent>
@@ -185,7 +185,9 @@ export const ConfigureProjectCard = ({
 											</div>
 
 											<div className="flex items-center gap-2 mt-6">
-												<p className="hidden sm:block">OVERRIDE</p>
+												<p className="text-sm font-[500] hidden sm:block">
+													OVERRIDE
+												</p>
 												<Switch
 													checked={editMode.buildCmd}
 													onCheckedChange={(checked) => {
@@ -219,7 +221,9 @@ export const ConfigureProjectCard = ({
 											</div>
 
 											<div className="flex items-center gap-2 mt-6">
-												<p className="hidden sm:block">OVERRIDE</p>
+												<p className="text-sm font-[500] hidden sm:block">
+													OVERRIDE
+												</p>
 												<Switch
 													checked={editMode.outDir}
 													onCheckedChange={(checked) => {
@@ -253,7 +257,9 @@ export const ConfigureProjectCard = ({
 											</div>
 
 											<div className="flex items-center gap-2 mt-6">
-												<p className="hidden sm:block">OVERRIDE</p>
+												<p className="text-sm font-[500] hidden sm:block">
+													OVERRIDE
+												</p>
 												<Switch
 													checked={editMode.installCmd}
 													onCheckedChange={(checked) => {

@@ -25,7 +25,7 @@ export const ImportSideDetails = ({
 				</p>
 			</div>
 
-			<hr className="border-t border-accents-2 mr-16" />
+			<hr className="border-t mr-16" />
 
 			<div className="flex flex-col gap-2">
 				<h1 className="font-[500] text-[12px] dark:text-[#FAFBFB] text-[#000101] mb-2">
@@ -57,7 +57,7 @@ export const ImportSideDetails = ({
 				</p>
 			</div>
 
-			<hr className="border-t border-accents-2 mr-16" />
+			<hr className="border-t mr-16" />
 			<a href="" className="flex items-center gap-2">
 				Import a different Git Repository
 				<ArrowRight className="w-4 h-4" />

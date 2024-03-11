@@ -75,7 +75,7 @@ export const ProjectDisplay = ({ project }: { project: Project }) => {
 					<SelectActiveTab activeTab={activeTab} setActiveTab={setActiveTab} />
 				</div>
 
-				<hr className="border-t border-accents-2 mt-10" />
+				<hr className="border-t mt-10" />
 			</section>
 
 			{activeTab === "project" && <ProjectTabSection project={project} />}

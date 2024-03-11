@@ -347,7 +347,7 @@ export const ConfigureProjectCard = ({
 
 						{/* deploy button */}
 						<Button type="submit" className="flex gap-2" disabled={loading}>
-							Deploy
+							Create Project
 							{loading && <Spinner size="lg" />}
 						</Button>
 					</form>

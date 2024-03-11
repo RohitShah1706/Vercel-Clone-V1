@@ -52,7 +52,14 @@ router.get("/:id", authenticateGithub, async (req, res) => {
 		return res.status(403).json({ message: "Forbidden" });
 	}
 
-	return res.json(project);
+	let envVars: Record<string, string> = {};
+	for (const envVar of project.envVars) {
+		envVars[envVar.key] = "";
+	}
+
+	const response = { ...project, envVars };
+
+	return res.json(response);
 });
 
 router.post("/", authenticateGithub, async (req, res) => {

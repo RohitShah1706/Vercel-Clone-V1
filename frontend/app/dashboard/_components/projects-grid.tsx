@@ -15,7 +15,7 @@ export const ProjectsGrid = ({ projects }: { projects: Project[] }) => {
 					<div className="flex flex-col gap-1">
 						<Link
 							className="overflow-auto whitespace-normal font-semibold underline text-base md:text-lg"
-							href={`/dashboard/projects/${project.id}`}
+							href={`/projects/${project.id}`}
 						>
 							{project.name}
 						</Link>

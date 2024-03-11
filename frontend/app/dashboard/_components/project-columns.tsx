@@ -16,7 +16,7 @@ export const columns: ColumnDef<Project>[] = [
 				<div className="flex flex-col gap-1">
 					<Link
 						className="overflow-auto whitespace-normal font-semibold underline"
-						href={`/dashboard/projects/${row.original.id}`}
+						href={`/projects/${row.original.id}/`}
 					>
 						{row.original.name}
 					</Link>

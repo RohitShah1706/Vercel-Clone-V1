@@ -24,6 +24,11 @@ import {
 	FormMessage,
 } from "@/components/ui/form";
 import { DisplayEnvVar } from "./display-envvar";
+import { Project } from "@/app/types";
+import { createProject } from "@/actions/project";
+import { Spinner } from "@/components/custom/spinner";
+import { useToast } from "@/components/ui/use-toast";
+import { useRouter } from "next/navigation";
 
 const formSchema = z.object({
 	name: z.string().min(1, "Project Name is required"),
@@ -42,6 +47,9 @@ export const ConfigureProjectCard = ({
 	projectName: string | null;
 	src: string | null;
 }) => {
+	const { toast } = useToast();
+	const router = useRouter();
+
 	const [newKey, setNewKey] = useState("");
 	const [newValue, setNewValue] = useState("");
 	const [editMode, setEditMode] = useState({
@@ -49,13 +57,9 @@ export const ConfigureProjectCard = ({
 		outDir: false,
 		installCmd: false,
 	});
+	const [loading, setLoading] = useState(false);
 
-	// ! inputs to recreate using zod -> will go POST /projects
 	const [envVars, setEnvVars] = useState<Record<string, string>>({});
-	const [rootDir, setRootDir] = useState<string>("");
-	const [outDir, setOutDir] = useState<string>("");
-	const [installCmd, setInstallCmd] = useState<string>("");
-	const [buildCmd, setBuildCmd] = useState<string>("");
 
 	const handleAddEnvVar = () => {
 		const updatedEnvVars = { ...envVars, [newKey]: newValue };
@@ -79,8 +83,20 @@ export const ConfigureProjectCard = ({
 		},
 	});
 
-	const onSubmit = (values: z.infer<typeof formSchema>) => {
-		console.log(values);
+	const onSubmit = async (values: z.infer<typeof formSchema>) => {
+		const project: Project = values;
+		setLoading(true);
+		const result = await createProject(project);
+		if (result) {
+			toast({
+				title: "Project Created successfully!",
+				description: "Redirecting to the dashboard in 3 seconds",
+			});
+			setTimeout(() => {
+				router.push("/dashboard");
+			}, 3000);
+		}
+		setLoading(false);
 	};
 
 	return (
@@ -293,6 +309,7 @@ export const ConfigureProjectCard = ({
 													</div>
 													<div className="hidden sm:block mt-[19.1px]">
 														<Button
+															type="button"
 															variant="secondary"
 															className="px-5"
 															onClick={handleAddEnvVar}
@@ -302,6 +319,7 @@ export const ConfigureProjectCard = ({
 													</div>
 												</div>
 												<Button
+													type="button"
 													variant="secondary"
 													className="block sm:hidden w-full"
 													onClick={handleAddEnvVar}
@@ -328,7 +346,10 @@ export const ConfigureProjectCard = ({
 						</div>
 
 						{/* deploy button */}
-						<Button type="submit">Deploy</Button>
+						<Button type="submit" className="flex gap-2" disabled={loading}>
+							Deploy
+							{loading && <Spinner size="lg" />}
+						</Button>
 					</form>
 				</Form>
 			</CardContent>

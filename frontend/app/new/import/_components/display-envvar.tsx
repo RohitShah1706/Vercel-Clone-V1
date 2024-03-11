@@ -31,6 +31,7 @@ export const DisplayEnvVar = ({
 				/>
 			</div>
 			<Button
+				type="button"
 				variant="secondary"
 				className="px-4"
 				onClick={() => {

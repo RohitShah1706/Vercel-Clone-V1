@@ -68,7 +68,7 @@ Add in `package.json` file the following script to create dev server:
 
 ---
 
-## Setting up Primea with PostgreSQL
+## Setting up Prisma with PostgreSQL
 
 **Reference**: [Prisma Docs - QuickStart](https://www.prisma.io/docs/getting-started/quickstart)
 

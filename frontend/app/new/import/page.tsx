@@ -15,13 +15,12 @@ export default function ImportRepoAndDeployPage() {
 	const branch = searchParams.get("branch");
 
 	const [src, setSrc] = useState(s);
-	const [projectName, setProjectName] = useState(pname);
 
 	useEffect(() => {
 		if (!s || !pname || !branch) {
 			router.push("/dashboard");
 		}
-	}, []);
+	}, [s, pname, branch, router]);
 
 	if (!s || !pname) {
 		<div className="flex items-center justify-center min-h-screen">
@@ -41,17 +40,10 @@ export default function ImportRepoAndDeployPage() {
 
 			<div className="flex space-x-4">
 				<div className="w-1/3 hidden lg:block">
-					<ImportSideDetails
-						projectName={projectName}
-						src={src}
-						branch={branch}
-					/>
+					<ImportSideDetails projectName={pname} src={src} branch={branch} />
 				</div>
 				<div className="w-full lg:w-2/3">
-					<ConfigureProjectCard
-						projectName={projectName}
-						setProjectName={setProjectName}
-					/>
+					<ConfigureProjectCard projectName={pname} src={src} />
 				</div>
 			</div>
 		</div>

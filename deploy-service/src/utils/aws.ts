@@ -5,12 +5,14 @@ import {
 } from "@aws-sdk/client-s3";
 import mime from "mime-types";
 import fs from "fs";
-import path from "path";
+import path, { resolve } from "path";
 
-import {s3Client} from "../connection/s3";
-import {AWS_S3_BUCKET_NAME} from "../config";
-import {getAllFiles} from "./file";
-import {downloadInChunks} from "./downloadInChunks";
+import { s3Client } from "../connection/s3";
+import { AWS_S3_BUCKET_NAME } from "../config";
+import { getAllFiles } from "./file";
+import { downloadInChunks } from "./downloadInChunks";
+import { _publishLog } from "./kafka";
+import { Producer } from "kafkajs";
 
 const uploadFile = async (fileName: string, localFilePath: string) => {
 	// fileName = `dist/${id}` + `assets/index-51d1aabc.js`
@@ -28,25 +30,39 @@ const uploadFile = async (fileName: string, localFilePath: string) => {
 	// console.log(response);
 };
 
-export const copyFinalDistToS3 = async (id: string, outDir: string) => {
-	// __dirname = `D:/Projects/Vercel Clone/deploy-service/src/utils`
-	const outputPath = path.join(__dirname, "../");
-	const folderPath = path.join(outputPath, `clonedRepos/${id}/${outDir}`);
-	const allFiles = getAllFiles(folderPath);
+export const copyFinalDistToS3 = async (
+	id: string,
+	outDir: string,
+	producer: Producer
+): Promise<boolean> => {
+	try {
+		// __dirname = `D:/Projects/Vercel Clone/deploy-service/src/utils`
+		const outputPath = path.join(__dirname, "../");
+		const folderPath = path.join(outputPath, `clonedRepos/${id}/${outDir}`);
+		const allFiles = getAllFiles(folderPath);
 
-	const promises = allFiles.map((file) => {
-		return new Promise((resolve) => {
-			uploadFile(`dist/${id}/` + file.slice(folderPath.length + 1), file).then(
-				() => {
+		const promises = allFiles.map((file) => {
+			return new Promise((resolve) => {
+				uploadFile(
+					`dist/${id}/` + file.slice(folderPath.length + 1),
+					file
+				).then(() => {
 					resolve("");
-				}
-			);
+				});
+			});
 		});
-	});
 
-	console.log(`Started uploading build ${id} to S3`);
-	await Promise.all(promises);
-	console.log(`Finished uploading build ${id} to S3`);
+		console.log(`Started uploading build ${id} to S3`);
+		await _publishLog(id, `Started uploading build ${id} to S3`, producer);
+		await Promise.all(promises);
+		console.log(`Finished uploading build ${id} to S3`);
+		await _publishLog(id, `Finished uploading build ${id} to S3`, producer);
+		return true;
+	} catch (err) {
+		console.error("Error uploading build to S3", err);
+		await _publishLog(id, `Error uploading build to S3`, producer);
+		return false;
+	}
 };
 
 export const downloadS3Folder = async (prefix: string) => {
@@ -84,7 +100,7 @@ export const downloadS3Folder = async (prefix: string) => {
 		const dirName = path.dirname(finalOutputPath);
 
 		if (!fs.existsSync(dirName)) {
-			fs.mkdirSync(dirName, {recursive: true});
+			fs.mkdirSync(dirName, { recursive: true });
 		}
 
 		await downloadInChunks({

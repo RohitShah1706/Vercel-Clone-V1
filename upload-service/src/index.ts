@@ -1,13 +1,13 @@
 import express from "express";
 import cors from "cors";
 
-import {DEPLOY_SERVICE_LOGS_KAFKA_TOPIC} from "./config";
-import {prismaClient} from "./connection/prisma";
-import {getRedisClient} from "./connection/redis";
-import {getKafkaInstance} from "./connection/kafka";
-import {removeAnsiEscapeCodes} from "./utils/ansiEscapeCodeRemover";
-import {randomIdGenerator} from "./utils/randomIdGenerator";
-import {decrypt} from "./utils/cryptoUtils";
+import { DEPLOY_SERVICE_LOGS_KAFKA_TOPIC } from "./config";
+import { prismaClient } from "./connection/prisma";
+import { getRedisClient } from "./connection/redis";
+import { getKafkaInstance } from "./connection/kafka";
+import { removeAnsiEscapeCodes } from "./utils/ansiEscapeCodeRemover";
+import { randomIdGenerator } from "./utils/randomIdGenerator";
+import { decrypt } from "./utils/cryptoUtils";
 
 const app = express();
 const kafka = getKafkaInstance(`upload-service-${randomIdGenerator()}`);
@@ -42,9 +42,9 @@ app.post("/decrypt", async (req, res) => {
 
 	try {
 		const decryptedString = decrypt(encryptedString);
-		res.status(200).json({decryptedString});
+		res.status(200).json({ decryptedString });
 	} catch (error) {
-		res.status(400).json({message: "Invalid encrypted string"});
+		res.status(400).json({ message: "Invalid encrypted string" });
 	}
 });
 
@@ -75,7 +75,7 @@ const initKafkaConsumer = async () => {
 				}
 				if (!message.value) continue;
 				const stringMessage = message.value.toString();
-				const {log, deploymentId, time} = JSON.parse(stringMessage);
+				const { log, deploymentId, time } = JSON.parse(stringMessage);
 				try {
 					await prismaClient.logEvent.create({
 						data: {
@@ -101,15 +101,15 @@ const startServer = async () => {
 	try {
 		await publisher.connect();
 		console.log("Connected to Redis");
-		// await producer.connect();
-		// await consumer.connect();
-		// console.log("Connected to Kafka");
+		await producer.connect();
+		await consumer.connect();
+		console.log("Connected to Kafka");
 		await prismaClient.$connect();
 		console.log("Connected to Postgresql");
 		app.listen(PORT, () => {
 			console.log(`Server is running on port ${PORT}`);
 		});
-		// initKafkaConsumer();
+		initKafkaConsumer();
 	} catch (error) {
 		// ! exit gracefully
 		console.log(error);

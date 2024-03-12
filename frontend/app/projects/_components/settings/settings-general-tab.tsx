@@ -1,6 +1,6 @@
 "use client";
 
-import { Project } from "@/app/types";
+import { Project, UpdateProjectRequestBody } from "@/app/types";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -26,6 +26,9 @@ import { Switch } from "@/components/ui/switch";
 import { useState } from "react";
 import { ExternalLink } from "lucide-react";
 import Link from "next/link";
+import { Dispatch, SetStateAction } from "react";
+import { updateProjectDetails } from "@/actions/project";
+import { Spinner } from "@/components/custom/spinner";
 
 const formSchema = z.object({
 	outDir: z.string().optional(),
@@ -33,8 +36,15 @@ const formSchema = z.object({
 	buildCmd: z.string().optional(),
 });
 
-export const SettingsGeneralTab = ({ project }: { project: Project }) => {
+export const SettingsGeneralTab = ({
+	project,
+	setDisplayProject,
+}: {
+	project: Project;
+	setDisplayProject: Dispatch<SetStateAction<Project>>;
+}) => {
 	const [projectName, setProjectName] = useState<string>(project.name || "");
+	const [isLoading, setIsLoading] = useState(false);
 	const [editMode, setEditMode] = useState({
 		buildCmd: false,
 		outDir: false,
@@ -46,11 +56,41 @@ export const SettingsGeneralTab = ({ project }: { project: Project }) => {
 	});
 
 	const updateProjectName = async () => {
-		console.log("Updating project name", projectName);
+		setIsLoading(true);
+		const newProjectDetails: UpdateProjectRequestBody = {
+			name: projectName,
+		};
+		const response = await updateProjectDetails(
+			project.id as string,
+			newProjectDetails
+		);
+		if (response !== null) {
+			setDisplayProject((prev) => {
+				return {
+					...prev,
+					name: projectName,
+				};
+			});
+		}
+		setIsLoading(false);
 	};
 
 	const onSubmit = async (values: z.infer<typeof formSchema>) => {
-		console.log("Form submitted", values);
+		setIsLoading(true);
+		const newProjectDetails: UpdateProjectRequestBody = values;
+		const response = await updateProjectDetails(
+			project.id as string,
+			newProjectDetails
+		);
+		if (response !== null) {
+			setDisplayProject((prev) => {
+				return {
+					...prev,
+					...newProjectDetails,
+				};
+			});
+		}
+		setIsLoading(false);
 	};
 
 	return (
@@ -84,7 +124,14 @@ export const SettingsGeneralTab = ({ project }: { project: Project }) => {
 							Project Name <ExternalLink className="w-4 h-4" />
 						</Link>
 					</p>
-					<Button onClick={updateProjectName}>Save</Button>
+					<Button
+						onClick={updateProjectName}
+						className="flex items-center gap-2"
+						disabled={isLoading}
+					>
+						Save
+						{isLoading && <Spinner size="lg" />}
+					</Button>
 				</CardFooter>
 			</Card>
 
@@ -216,7 +263,14 @@ export const SettingsGeneralTab = ({ project }: { project: Project }) => {
 									<ExternalLink className="w-4 h-4" />
 								</Link>
 							</p>
-							<Button type="submit">Save</Button>
+							<Button
+								type="submit"
+								className="flex items-center gap-2"
+								disabled={isLoading}
+							>
+								Save
+								{isLoading && <Spinner size="lg" />}
+							</Button>
 						</CardFooter>
 					</form>
 				</Form>

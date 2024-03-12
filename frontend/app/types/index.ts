@@ -42,3 +42,11 @@ export interface Repository {
 	default_branch: string;
 	last_commit_id: string;
 }
+
+export interface UpdateProjectRequestBody {
+	name?: string;
+	rootDir?: string;
+	outDir?: string;
+	installCmd?: string;
+	buildCmd?: string;
+}

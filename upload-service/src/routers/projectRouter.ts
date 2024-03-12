@@ -156,7 +156,6 @@ router.post("/", authenticateGithub, async (req, res) => {
 router.put("/:id", authenticateGithub, async (req, res) => {
 	const UpdateProjectRequestBody = z.object({
 		name: z.string().optional(),
-		githubProjectName: z.string().optional(),
 		rootDir: z.string().optional(),
 		outDir: z.string().optional(),
 		installCmd: z.string().optional(),
@@ -170,8 +169,7 @@ router.put("/:id", authenticateGithub, async (req, res) => {
 			.json({ errors: parsed.error.formErrors.fieldErrors });
 	}
 
-	const { name, githubProjectName, rootDir, outDir, installCmd, buildCmd } =
-		parsed.data;
+	const { name, rootDir, outDir, installCmd, buildCmd } = parsed.data;
 
 	const projectId = req.params.id;
 	const emailId = res.locals.emailId as string;
@@ -201,7 +199,6 @@ router.put("/:id", authenticateGithub, async (req, res) => {
 			},
 			data: {
 				name,
-				githubProjectName,
 				userEmailId: emailId,
 				rootDir,
 				outDir,

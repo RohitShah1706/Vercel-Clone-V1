@@ -21,9 +21,7 @@ import { Button } from "@/components/ui/button";
 import { z } from "zod";
 
 import { Project } from "@/app/types";
-import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { verify } from "crypto";
 import {
 	Form,
 	FormControl,

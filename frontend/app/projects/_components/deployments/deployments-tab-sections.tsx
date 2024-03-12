@@ -1,10 +1,8 @@
-import { Card, CardContent } from "@/components/ui/card";
-
 import Link from "next/link";
-import { GitBranch, GitCommitHorizontal, RefreshCw } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { RefreshCw } from "lucide-react";
 
-import { DeploymentStatus, Project } from "@/app/types";
+import { Dispatch, SetStateAction } from "react";
+import { Project } from "@/app/types";
 import Image from "next/image";
 
 export const DeploymentsTabSection = ({ project }: { project: Project }) => {

@@ -16,12 +16,14 @@ export const ProjectDisplay = ({ project }: { project: Project }) => {
 		"project" | "deployments" | "settings"
 	>("project");
 
+	const [displayProject, setDisplayProject] = useState<Project>(project);
+
 	return (
 		<div>
 			<section>
 				<div className="container flex items-center justify-between mt-10">
 					<h1 className="text-[32px] font-[500] w-full lg:w-2/3 overflow-hidden truncate mr-4">
-						{project.name}
+						{displayProject.name}
 					</h1>
 					<div className="hidden lg:block">
 						<div className="flex items-center gap-3">
@@ -43,12 +45,17 @@ export const ProjectDisplay = ({ project }: { project: Project }) => {
 								</Tabs>
 							</div>
 							<Link
-								href={`https://github.com/${project.githubProjectName}`}
+								href={`https://github.com/${displayProject.githubProjectName}`}
 								target="_blank"
 							>
 								<Button variant="outline">Git Repository</Button>
 							</Link>
-							<Button>Visit</Button>
+							<Link
+								href={`${process.env.NEXT_PUBLIC_PROXY_SERVER_BASE_URL}/${displayProject.id}/`}
+								target="_blank"
+							>
+								<Button>Visit</Button>
+							</Link>
 						</div>
 					</div>
 				</div>
@@ -57,7 +64,7 @@ export const ProjectDisplay = ({ project }: { project: Project }) => {
 					<div className="flex items-center gap-4">
 						<Button>Visit</Button>
 						<Link
-							href={`https://github.com/${project.githubProjectName}`}
+							href={`https://github.com/${displayProject.githubProjectName}`}
 							target="_blank"
 						>
 							<Button variant="outline">Git Repository</Button>
@@ -78,11 +85,18 @@ export const ProjectDisplay = ({ project }: { project: Project }) => {
 				<hr className="border-t mt-10" />
 			</section>
 
-			{activeTab === "project" && <ProjectTabSection project={project} />}
-			{activeTab === "deployments" && (
-				<DeploymentsTabSection project={project} />
+			{activeTab === "project" && (
+				<ProjectTabSection project={displayProject} />
 			)}
-			{activeTab === "settings" && <SettingsTabSection project={project} />}
+			{activeTab === "deployments" && (
+				<DeploymentsTabSection project={displayProject} />
+			)}
+			{activeTab === "settings" && (
+				<SettingsTabSection
+					project={displayProject}
+					setDisplayProject={setDisplayProject}
+				/>
+			)}
 		</div>
 	);
 };

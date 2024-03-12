@@ -1,15 +1,11 @@
 import { Project } from "@/app/types";
 import { Separator } from "@/components/ui/separator";
-import { Link } from "lucide-react";
 import { SettingsSidebarNav } from "./settings-sidebar-nav";
 import { useState } from "react";
+import { Dispatch, SetStateAction } from "react";
 import { SettingsGeneralTab } from "./settings-general-tab";
 import { SettingsEnvvarsTab } from "./settings-envvars-tab";
 import { SettingsAdvancedTab } from "./settings-advanced-tab";
-
-// General
-// Environment Variables
-// Advanced - delete project
 
 const sidebarNavItems = [
 	{
@@ -26,7 +22,13 @@ const sidebarNavItems = [
 	},
 ];
 
-export const SettingsTabSection = ({ project }: { project: Project }) => {
+export const SettingsTabSection = ({
+	project,
+	setDisplayProject,
+}: {
+	project: Project;
+	setDisplayProject: Dispatch<SetStateAction<Project>>;
+}) => {
 	const [activeTab, setActiveTab] = useState<
 		"general" | "envvars" | "advanced"
 	>("general");
@@ -51,10 +53,16 @@ export const SettingsTabSection = ({ project }: { project: Project }) => {
 					</aside>
 					<div className="flex-1 lg:max-w-4xl">
 						{activeTab === "general" && (
-							<SettingsGeneralTab project={project} />
+							<SettingsGeneralTab
+								project={project}
+								setDisplayProject={setDisplayProject}
+							/>
 						)}
 						{activeTab === "envvars" && (
-							<SettingsEnvvarsTab project={project} />
+							<SettingsEnvvarsTab
+								project={project}
+								setDisplayProject={setDisplayProject}
+							/>
 						)}
 						{activeTab === "advanced" && (
 							<SettingsAdvancedTab project={project} />

@@ -2,7 +2,7 @@
 
 import axios, { AxiosError } from "axios";
 
-import { Project } from "@/app/types";
+import { Project, UpdateProjectRequestBody } from "@/app/types";
 import { getSession } from "./session";
 
 const NEXT_PUBLIC_BACKEND_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_BASE_URL;
@@ -82,6 +82,37 @@ export const createProject = async (
 				},
 			}
 		);
+		return response.data;
+	} catch (error: unknown) {
+		const axiosError = error as AxiosError;
+		if (axiosError.response && axiosError.response.status === 404) {
+			console.log("error", axiosError.response.data);
+		}
+		return null;
+	}
+};
+
+export const updateProjectDetails = async (
+	projectId: string,
+	project: UpdateProjectRequestBody
+): Promise<Project | null> => {
+	const session = await getSession();
+
+	if (!session) {
+		return null;
+	}
+
+	try {
+		const response = await axios.put(
+			`${NEXT_PUBLIC_BACKEND_BASE_URL}/projects/${projectId}`,
+			project,
+			{
+				headers: {
+					Authorization: `Bearer ${session.accessToken}`,
+				},
+			}
+		);
+
 		return response.data;
 	} catch (error: unknown) {
 		const axiosError = error as AxiosError;

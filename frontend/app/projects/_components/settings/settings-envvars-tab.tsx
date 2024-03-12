@@ -1,6 +1,5 @@
 "use client";
 
-import { DisplayEnvVar } from "@/app/new/import/_components/display-envvar";
 import { Project } from "@/app/types";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,16 +15,84 @@ import { Label } from "@/components/ui/label";
 import { ExternalLink } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { SettingsDisplayEnvVar } from "./settings-display-env-var";
+import { Dispatch, SetStateAction } from "react";
+import { addEnvVar, removeEnvVar } from "@/actions/envvars";
+import { useToast } from "@/components/ui/use-toast";
 
-export const SettingsEnvvarsTab = ({ project }: { project: Project }) => {
+export const SettingsEnvvarsTab = ({
+	project,
+	setDisplayProject,
+}: {
+	project: Project;
+	setDisplayProject: Dispatch<SetStateAction<Project>>;
+}) => {
+	const { toast } = useToast();
+
+	const [isLoading, setIsLoading] = useState(false);
 	const [newKey, setNewKey] = useState("");
 	const [newValue, setNewValue] = useState("");
-	const [envVars, setEnvVars] = useState<Record<string, string>>(
-		project.envVars ? project.envVars : {}
-	);
 
-	const handleAddEnvVar = () => {};
-	const handleRemoveEnvVar = (keyToRemove: string) => {};
+	const handleAddEnvVar = async () => {
+		setIsLoading(true);
+		const response = await addEnvVar({
+			projectId: project.id as string,
+			key: newKey,
+			value: newValue,
+		});
+
+		if (response === "SUCCESS") {
+			toast({
+				title: "Added Environment Variable",
+				description: "The environment variable was added successfully.",
+			});
+			setDisplayProject((prev) => ({
+				...prev,
+				envVars: {
+					...prev.envVars,
+					[newKey]: newValue,
+				},
+			}));
+		} else {
+			toast({
+				variant: "destructive",
+				title: "Something went wrong.",
+				description: "There was a problem adding the environment variable.",
+			});
+		}
+		setNewKey("");
+		setNewValue("");
+		setIsLoading(false);
+	};
+
+	const handleRemoveEnvVar = async (keyToRemove: string) => {
+		setIsLoading(true);
+		const response = await removeEnvVar({
+			projectId: project.id as string,
+			key: keyToRemove,
+		});
+
+		if (response === "SUCCESS") {
+			toast({
+				title: "Removed Environment Variable",
+				description: "The environment variable was removed successfully.",
+			});
+			const newEnvVars = { ...project.envVars };
+			delete newEnvVars[keyToRemove];
+			setDisplayProject((prev) => ({
+				...prev,
+				envVars: newEnvVars,
+			}));
+		} else {
+			toast({
+				variant: "destructive",
+				title: "Something went wrong.",
+				description: "There was a problem removing the environment variable.",
+			});
+		}
+
+		setIsLoading(false);
+	};
 
 	return (
 		<div className="flex flex-col gap-8">
@@ -78,6 +145,7 @@ export const SettingsEnvvarsTab = ({ project }: { project: Project }) => {
 										variant="secondary"
 										className="px-5"
 										onClick={handleAddEnvVar}
+										disabled={isLoading}
 									>
 										Add
 									</Button>
@@ -88,6 +156,7 @@ export const SettingsEnvvarsTab = ({ project }: { project: Project }) => {
 								variant="secondary"
 								className="block sm:hidden w-full"
 								onClick={handleAddEnvVar}
+								disabled={isLoading}
 							>
 								Add
 							</Button>
@@ -95,14 +164,17 @@ export const SettingsEnvvarsTab = ({ project }: { project: Project }) => {
 
 						{/* envVars display */}
 						<div className="flex flex-col items-center gap-2">
-							{Object.entries(envVars).map(([key, value]) => (
-								<DisplayEnvVar
-									key={key}
-									envVarKey={key}
-									envVarValue={value}
-									handleRemoveEnvVar={handleRemoveEnvVar}
-								/>
-							))}
+							{Object.entries(project.envVars ? project.envVars : {}).map(
+								([key, value]) => (
+									<SettingsDisplayEnvVar
+										projectId={project.id as string}
+										key={key}
+										envVarKey={key}
+										handleRemoveEnvVar={handleRemoveEnvVar}
+										isLoading={isLoading}
+									/>
+								)
+							)}
 						</div>
 					</div>
 				</CardContent>

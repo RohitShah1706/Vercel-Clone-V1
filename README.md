@@ -536,4 +536,6 @@ TODO: create frontend basic template
 
 11. [Next.js Server Actions & 5 awesome things you can do](https://www.youtube.com/watch?v=O94ESaJtHtM)
 
+12. [Node Typescript Project Dockerfile](https://www.emmanuelgautier.com/blog/snippets/typescript-dockerfile)
+
 ---

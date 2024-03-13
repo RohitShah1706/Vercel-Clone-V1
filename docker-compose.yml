@@ -1,0 +1,38 @@
+services:
+  upload-service:
+    image: rohitshah1706/vercel_clone_upload_service:latest
+    container_name: upload_service
+    ports:
+      - "5000:5000"
+    env_file:
+      - ./upload-service/.env
+    volumes:
+      - ./upload-service/data:/app/dist/clonedRepos
+      - ./upload-service/kafka.pem:/app/kafka.pem
+    networks:
+      - vercel_clone_network
+
+  deploy-service:
+    image: rohitshah1706/vercel_clone_deploy_service:latest
+    container_name: deploy_service
+    env_file:
+      - ./deploy-service/.env
+    volumes:
+      - ./deploy-service/data:/app/dist/clonedRepos
+      - ./deploy-service/kafka.pem:/app/kafka.pem
+    networks:
+      - vercel_clone_network
+
+  request-handler:
+    image: rohitshah1706/vercel_clone_request_handler:latest
+    container_name: request_handler
+    ports:
+      - "8080:8080"
+    env_file:
+      - ./request-handler/.env
+    networks:
+      - vercel_clone_network
+
+networks:
+  vercel_clone_network:
+    driver: bridge

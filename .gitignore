@@ -6,3 +6,5 @@ localstack_data
 mounts
 clonedRepos
 *.pem
+data
+dist

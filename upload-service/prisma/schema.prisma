@@ -25,10 +25,10 @@ model Project {
   rootDir           String       @default("") @map("root_dir")
   githubProjectName String       @map("github_project_name")
   userEmailId       String       @map("user_email_id")
-  deployments       Deployment[] @relation(name: "ProjectDeployments")
   lastDeploymentId  String?      @unique @map("last_deployment_id")
-  lastDeployment    Deployment?  @relation("LastDeployment", fields: [lastDeploymentId], references: [id])
+  deployments       Deployment[] @relation("ProjectDeployments")
   envVars           EnvVar[]
+  lastDeployment    Deployment?  @relation("LastDeployment", fields: [lastDeploymentId], references: [id])
   user              User         @relation(fields: [userEmailId], references: [email])
 }
 
@@ -39,10 +39,9 @@ model Deployment {
   commitId          String           @map("commit_id")
   createdAt         DateTime         @default(now()) @map("created_at")
   status            DeploymentStatus @default(QUEUED)
-  project           Project          @relation(name: "ProjectDeployments", fields: [projectId], references: [id])
+  project           Project          @relation("ProjectDeployments", fields: [projectId], references: [id])
+  logEvent          LogEvent[]
   associatedProject Project?         @relation("LastDeployment")
-
-  logEvent LogEvent[]
 }
 
 model EnvVar {
@@ -60,8 +59,8 @@ model LogEvent {
   id           String      @id @default(uuid())
   timestamp    DateTime    @default(now()) @db.Timestamp(6)
   deploymentId String?     @map("deployment_id")
-  Deployment   Deployment? @relation(fields: [deploymentId], references: [id])
   log          String
+  Deployment   Deployment? @relation(fields: [deploymentId], references: [id])
 
   @@index([deploymentId])
 }

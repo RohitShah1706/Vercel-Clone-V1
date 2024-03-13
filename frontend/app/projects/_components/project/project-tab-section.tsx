@@ -35,12 +35,20 @@ export const ProjectTabSection = ({ project }: { project: Project }) => {
 							project.lastDeployment.status === DeploymentStatus.FAILED ? (
 								<p className="text-sm font-[500] flex items-center gap-2">
 									<span className="inline-block h-3 w-3 rounded-full bg-[#f87171]"></span>
-									Failed
+									{project.lastDeployment.status}
+								</p>
+							) : 
+							project.lastDeployment.status ===
+									DeploymentStatus.DEPLOYING ||
+							  project.lastDeployment.status === DeploymentStatus.QUEUED ? (
+								<p className="text-sm font-[500] flex items-center gap-2">
+									<span className="inline-block h-3 w-3 rounded-full bg-[#f6bc3f]"></span>
+									{project.lastDeployment.status}
 								</p>
 							) : (
 								<p className="text-sm font-[500] flex items-center gap-2">
 									<span className="inline-block h-3 w-3 rounded-full bg-[#50e3c2]"></span>
-									Ready
+									{project.lastDeployment.status}
 								</p>
 							)
 						) : (

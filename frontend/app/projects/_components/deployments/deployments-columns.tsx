@@ -30,12 +30,18 @@ export const deploymentColumns: ColumnDef<Deployment>[] = [
 			return row.original.status === DeploymentStatus.FAILED ? (
 				<p className="text-sm font-[500] flex items-center gap-2">
 					<span className="inline-block h-3 w-3 rounded-full bg-[#f87171]"></span>
-					Failed
+					{row.original.status}
+				</p>
+			) : row.original.status === DeploymentStatus.DEPLOYING ||
+			  row.original.status === DeploymentStatus.QUEUED ? (
+				<p className="text-sm font-[500] flex items-center gap-2">
+					<span className="inline-block h-3 w-3 rounded-full bg-[#f6bc3f]"></span>
+					{row.original.status}
 				</p>
 			) : (
 				<p className="text-sm font-[500] flex items-center gap-2">
 					<span className="inline-block h-3 w-3 rounded-full bg-[#50e3c2]"></span>
-					Ready
+					{row.original.status}
 				</p>
 			);
 		},

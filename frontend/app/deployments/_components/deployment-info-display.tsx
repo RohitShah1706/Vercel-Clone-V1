@@ -86,12 +86,18 @@ export const DeploymentInfoDisplay = ({
 					{displayDeploymentInfo.status === DeploymentStatus.FAILED ? (
 						<p className="text-sm font-[500] flex items-center gap-2">
 							<span className="inline-block h-3 w-3 rounded-full bg-[#f87171]"></span>
-							Failed
+							{displayDeploymentInfo.status}
+						</p>
+					) : displayDeploymentInfo.status === DeploymentStatus.DEPLOYING ||
+					  displayDeploymentInfo.status === DeploymentStatus.QUEUED ? (
+						<p className="text-sm font-[500] flex items-center gap-2">
+							<span className="inline-block h-3 w-3 rounded-full bg-[#f6bc3f]"></span>
+							{displayDeploymentInfo.status}
 						</p>
 					) : (
 						<p className="text-sm font-[500] flex items-center gap-2">
 							<span className="inline-block h-3 w-3 rounded-full bg-[#50e3c2]"></span>
-							Ready
+							{displayDeploymentInfo.status}
 						</p>
 					)}
 				</div>

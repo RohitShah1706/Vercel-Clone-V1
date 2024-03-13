@@ -1,12 +1,10 @@
 "use server";
 
-import axios, { AxiosError } from "axios";
+import { AxiosError } from "axios";
 
 import { Deployment, DeploymentStatus } from "@/app/types";
 import { getSession } from "./session";
 import { getAxiosInstance } from "./axios";
-
-const NEXT_PUBLIC_BACKEND_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_BASE_URL;
 
 export const getDeployments = async (
 	projectId: string
@@ -47,7 +45,7 @@ export const getDeploymentStatus = async (
 			`/deployments/status?id=${deploymentId}`
 		);
 
-		return response.data;
+		return response.data.status as DeploymentStatus;
 	} catch (error: unknown) {
 		const axiosError = error as AxiosError;
 		if (axiosError.response && axiosError.response.status === 404) {

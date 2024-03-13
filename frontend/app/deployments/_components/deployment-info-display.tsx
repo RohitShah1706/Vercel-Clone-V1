@@ -34,23 +34,23 @@ export const DeploymentInfoDisplay = ({
 
 	const intervalIds = useRef<NodeJS.Timeout[]>([]);
 	useEffect(() => {
-		console.log(
-			"status kya hai",
-			displayDeploymentInfo.status,
-			displayDeploymentInfo.status !== DeploymentStatus.SUCCESS &&
-				displayDeploymentInfo.status !== DeploymentStatus.FAILED
-		);
-		// setup polling here
+		// console.log(
+		// 	"status kya hai",
+		// 	displayDeploymentInfo.status,
+		// 	displayDeploymentInfo.status === DeploymentStatus.DEPLOYING ||
+		// 		displayDeploymentInfo.status === DeploymentStatus.QUEUED
+		// );
+		// ! setup polling here
 		if (
-			displayDeploymentInfo.status !== DeploymentStatus.SUCCESS &&
-			displayDeploymentInfo.status !== DeploymentStatus.FAILED
+			displayDeploymentInfo.status === DeploymentStatus.DEPLOYING ||
+			displayDeploymentInfo.status === DeploymentStatus.QUEUED
 		) {
 			intervalIds.current.push(
 				setInterval(async () => {
-					console.log("fetching deployment status");
 					const updatedDeploymentStatus = await getDeploymentStatus(
 						displayDeploymentInfo.id
 					);
+
 					setDisplayDeploymentInfo((prev) => ({
 						...prev,
 						status: updatedDeploymentStatus,
@@ -58,7 +58,6 @@ export const DeploymentInfoDisplay = ({
 				}, 3000),
 
 				setInterval(async () => {
-					console.log("fetching deployment logs");
 					const updatedDeploymentLogs = await getDeploymentLogs(
 						displayDeploymentInfo.id
 					);

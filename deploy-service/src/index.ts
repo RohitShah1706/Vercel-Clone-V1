@@ -51,6 +51,7 @@ const consumeDeployTasks = async () => {
 						select: {
 							Project: {
 								select: {
+									id: true,
 									EnvVar: {
 										select: {
 											key: true,
@@ -77,11 +78,12 @@ const consumeDeployTasks = async () => {
 
 						// ! wait for all files to upload
 						if (buildSuccess === true) {
-							const copySuccess = await copyFinalDistToS3(
+							const copySuccess = await copyFinalDistToS3({
 								id,
-								deployment.Project.out_dir,
-								producer
-							);
+								projectId: deployment.Project.id,
+								outDir: deployment.Project.out_dir,
+								producer,
+							});
 							buildSuccess = copySuccess;
 						}
 

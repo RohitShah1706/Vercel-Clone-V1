@@ -9,6 +9,7 @@ import { decrypt } from "./utils/cryptoUtils";
 
 type DeploymentType = {
 	Project: {
+		id: string;
 		EnvVar: {
 			key: string;
 			encryptedValue: string;
@@ -129,7 +130,7 @@ export const buildProject = async (
 								let fileContent = fs.readFileSync(file, "utf-8");
 								fileContent = fileContent.replace(
 									keyToSearch,
-									`/${id}${keyToSearch}`
+									`/${deployment.Project.id}${keyToSearch}`
 								);
 								fs.writeFileSync(file, fileContent);
 							}

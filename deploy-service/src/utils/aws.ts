@@ -30,11 +30,17 @@ const uploadFile = async (fileName: string, localFilePath: string) => {
 	// console.log(response);
 };
 
-export const copyFinalDistToS3 = async (
-	id: string,
-	outDir: string,
-	producer: Producer
-): Promise<boolean> => {
+export const copyFinalDistToS3 = async ({
+	id,
+	projectId,
+	outDir,
+	producer,
+}: {
+	id: string;
+	projectId: string;
+	outDir: string;
+	producer: Producer;
+}): Promise<boolean> => {
 	try {
 		// __dirname = `D:/Projects/Vercel Clone/deploy-service/src/utils`
 		const outputPath = path.join(__dirname, "../");
@@ -44,7 +50,7 @@ export const copyFinalDistToS3 = async (
 		const promises = allFiles.map((file) => {
 			return new Promise((resolve) => {
 				uploadFile(
-					`dist/${id}/` + file.slice(folderPath.length + 1),
+					`dist/${projectId}/` + file.slice(folderPath.length + 1),
 					file
 				).then(() => {
 					resolve("");

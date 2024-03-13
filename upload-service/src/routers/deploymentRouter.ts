@@ -1,17 +1,17 @@
-import {Router} from "express";
-import {z} from "zod";
+import { Router } from "express";
+import { z } from "zod";
 import simpleGit from "simple-git";
 import path from "path";
-import {RedisClientType} from "redis";
-import {Producer} from "kafkajs";
+import { RedisClientType } from "redis";
+import { Producer } from "kafkajs";
 
-import {DEPLOY_SERVICE_TASKS_KAFKA_TOPIC} from "../config";
-import {prismaClient} from "../connection/prisma";
-import {authenticateGithub} from "../middlewares";
-import {getAllFiles, removeFolder} from "../utils/file";
-import {uploadFile} from "../utils/aws";
-import {toTypedPrismaError} from "../utils/prismaErrorMap";
-import {publishMessage} from "../utils/kafka";
+import { DEPLOY_SERVICE_TASKS_KAFKA_TOPIC } from "../config";
+import { prismaClient } from "../connection/prisma";
+import { authenticateGithub } from "../middlewares";
+import { getAllFiles, removeFolder } from "../utils/file";
+import { uploadFile } from "../utils/aws";
+import { toTypedPrismaError } from "../utils/prismaErrorMap";
+import { publishMessage } from "../utils/kafka";
 
 module.exports.default = (publisher: RedisClientType, producer: Producer) => {
 	const router = Router();
@@ -41,14 +41,14 @@ module.exports.default = (publisher: RedisClientType, producer: Producer) => {
 		if (!parsed.success) {
 			return res
 				.status(400)
-				.json({errors: parsed.error.formErrors.fieldErrors});
+				.json({ errors: parsed.error.formErrors.fieldErrors });
 		}
 
-		const {projectId} = parsed.data;
+		const { projectId } = parsed.data;
 		const emailId = res.locals.emailId;
 		const accessToken = res.locals.accessToken;
 
-		var {branch, commitId} = parsed.data;
+		var { branch, commitId } = parsed.data;
 		var githubProjectName: string;
 
 		try {
@@ -63,20 +63,20 @@ module.exports.default = (publisher: RedisClientType, producer: Producer) => {
 			});
 
 			if (existingProject === null) {
-				return res.status(404).json({message: "Project not found"});
+				return res.status(404).json({ message: "Project not found" });
 			}
 
 			if (existingProject.userEmailId !== emailId) {
-				return res.status(403).json({message: "Forbidden"});
+				return res.status(403).json({ message: "Forbidden" });
 			}
 
 			githubProjectName = existingProject.githubProjectName;
 		} catch (error) {
 			const typedError = toTypedPrismaError(error);
 			if (typedError !== null) {
-				return res.status(400).json({error: typedError});
+				return res.status(400).json({ error: typedError });
 			}
-			return res.status(500).json({message: "Error updating project"});
+			return res.status(500).json({ message: "Error updating project" });
 		}
 
 		try {
@@ -126,7 +126,7 @@ module.exports.default = (publisher: RedisClientType, producer: Producer) => {
 				await publisher.hSet("status", deploymentId, "FAILED");
 				return res
 					.status(400)
-					.json({message: "Invalid URL or Branch or Commit ID"});
+					.json({ message: "Invalid URL or Branch or Commit ID" });
 			}
 
 			// ! upload all files to s3
@@ -146,7 +146,7 @@ module.exports.default = (publisher: RedisClientType, producer: Producer) => {
 				);
 			} catch (error) {
 				removeFolder(outputPath);
-				return res.status(500).json({message: "Error uploading files"});
+				return res.status(500).json({ message: "Error uploading files" });
 			}
 
 			// ! update the last deployment id in the project
@@ -179,9 +179,9 @@ module.exports.default = (publisher: RedisClientType, producer: Producer) => {
 		} catch (error) {
 			const typedError = toTypedPrismaError(error);
 			if (typedError !== null) {
-				return res.status(400).json({error: typedError});
+				return res.status(400).json({ error: typedError });
 			}
-			return res.status(500).json({message: "Error creating deployment"});
+			return res.status(500).json({ message: "Error creating deployment" });
 		}
 	});
 
@@ -195,25 +195,25 @@ module.exports.default = (publisher: RedisClientType, producer: Producer) => {
 		if (!parsed.success) {
 			return res
 				.status(400)
-				.json({errors: parsed.error.formErrors.fieldErrors});
+				.json({ errors: parsed.error.formErrors.fieldErrors });
 		}
 
-		const {id} = parsed.data;
+		const { id } = parsed.data;
 
 		const status = await publisher.hGet("status", id);
 		if (status === null) {
-			return res.status(400).json({message: "Invalid ID"});
+			return res.status(400).json({ message: "Invalid ID" });
 		}
 
-		return res.status(200).json({status});
+		return res.status(200).json({ status });
 	});
 
 	router.get("/all/:projectId", authenticateGithub, async (req, res) => {
-		const {projectId} = req.params;
+		const { projectId } = req.params;
 		const emailId = res.locals.emailId;
 
 		if (projectId === undefined || projectId === null) {
-			return res.status(400).json({message: "Invalid project ID"});
+			return res.status(400).json({ message: "Invalid project ID" });
 		}
 
 		try {
@@ -223,15 +223,16 @@ module.exports.default = (publisher: RedisClientType, producer: Producer) => {
 				},
 				select: {
 					userEmailId: true,
+					githubProjectName: true,
 				},
 			});
 
 			if (existingProject === null) {
-				return res.status(404).json({message: "Project not found"});
+				return res.status(404).json({ message: "Project not found" });
 			}
 
 			if (existingProject.userEmailId !== emailId) {
-				return res.status(403).json({message: "Forbidden"});
+				return res.status(403).json({ message: "Forbidden" });
 			}
 
 			const deployments = await prismaClient.deployment.findMany({
@@ -250,13 +251,87 @@ module.exports.default = (publisher: RedisClientType, producer: Producer) => {
 				},
 			});
 
-			return res.status(200).json(deployments);
+			const response = deployments.map((deployment, index) => {
+				return {
+					...deployment,
+					githubProjectName: existingProject.githubProjectName,
+					isActive: index === 0,
+				};
+			});
+
+			return res.status(200).json(response);
 		} catch (error) {
 			const typedError = toTypedPrismaError(error);
 			if (typedError !== null) {
-				return res.status(400).json({error: typedError});
+				return res.status(400).json({ error: typedError });
 			}
-			return res.status(500).json({message: "Error fetching deployments"});
+			return res.status(500).json({ message: "Error fetching deployments" });
+		}
+	});
+
+	router.get("/:id", authenticateGithub, async (req, res) => {
+		const { id } = req.params;
+		const emailId = res.locals.emailId;
+
+		if (id === undefined || id === null) {
+			return res.status(400).json({ message: "Invalid deployment ID" });
+		}
+
+		try {
+			const deployment = await prismaClient.deployment.findUnique({
+				where: {
+					id,
+				},
+				select: {
+					id: true,
+					branch: true,
+					commitId: true,
+					status: true,
+					createdAt: true,
+					projectId: true,
+					logEvent: {
+						select: {
+							log: true,
+						},
+						orderBy: {
+							timestamp: "asc",
+						},
+					},
+				},
+			});
+
+			if (deployment === null) {
+				return res.status(404).json({ message: "Deployment not found" });
+			}
+
+			const project = await prismaClient.project.findUnique({
+				where: {
+					id: deployment.projectId,
+				},
+				select: {
+					userEmailId: true,
+					githubProjectName: true,
+				},
+			});
+
+			if (project === null) {
+				return res.status(404).json({ message: "Project not found" });
+			}
+
+			if (project.userEmailId !== emailId) {
+				return res.status(403).json({ message: "Forbidden" });
+			}
+
+			return res.status(200).json({
+				...deployment,
+				githubProjectName: project.githubProjectName,
+			});
+		} catch (error) {
+			const typedError = toTypedPrismaError(error);
+			if (typedError !== null) {
+				return res.status(400).json({ error: typedError });
+			}
+			return res.status(500).json({ message: "Error fetching deployment" });
 		}
 	});
 

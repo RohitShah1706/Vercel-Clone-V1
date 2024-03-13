@@ -1,9 +1,9 @@
 "use server";
 
-import axios, { AxiosError } from "axios";
+import { AxiosError } from "axios";
 
-import { Project } from "@/app/types";
 import { getSession } from "./session";
+import { getAxiosInstance } from "./axios";
 
 const NEXT_PUBLIC_BACKEND_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_BASE_URL;
 
@@ -17,13 +17,9 @@ export const getDecryptedEnvVarValue = async (
 	}
 
 	try {
-		const response = await axios.get(
-			`${NEXT_PUBLIC_BACKEND_BASE_URL}/envvars/${projectId}?key=${key}`,
-			{
-				headers: {
-					Authorization: `Bearer ${session.accessToken}`,
-				},
-			}
+		const axiosInstance = getAxiosInstance(session.accessToken as string);
+		const response = await axiosInstance.get(
+			`/envvars/${projectId}?key=${key}`
 		);
 
 		return response.data.value;
@@ -52,18 +48,11 @@ export const addEnvVar = async ({
 	}
 
 	try {
-		await axios.post(
-			`${NEXT_PUBLIC_BACKEND_BASE_URL}/envvars/${projectId}`,
-			{
-				key,
-				value,
-			},
-			{
-				headers: {
-					Authorization: `Bearer ${session.accessToken}`,
-				},
-			}
-		);
+		const axiosInstance = getAxiosInstance(session.accessToken as string);
+		await axiosInstance.post(`/envvars/${projectId}`, {
+			key,
+			value,
+		});
 		return "SUCCESS";
 	} catch (error: unknown) {
 		const axiosError = error as AxiosError;
@@ -87,14 +76,9 @@ export const removeEnvVar = async ({
 	}
 
 	try {
-		await axios.delete(
-			`${NEXT_PUBLIC_BACKEND_BASE_URL}/envvars/${projectId}?key=${key}`,
-			{
-				headers: {
-					Authorization: `Bearer ${session.accessToken}`,
-				},
-			}
-		);
+		const axiosInstance = getAxiosInstance(session.accessToken as string);
+		await axiosInstance.delete(`/envvars/${projectId}?key=${key}`);
+
 		return "SUCCESS";
 	} catch (error: unknown) {
 		const axiosError = error as AxiosError;

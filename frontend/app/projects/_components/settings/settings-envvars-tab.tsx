@@ -179,7 +179,7 @@ export const SettingsEnvvarsTab = ({
 					</div>
 				</CardContent>
 				<CardFooter className="text-sm bg-[#FAFAFA] dark:bg-[#0B0B0A] py-3 flex flex-col sm:flex-row items-center justify-between gap-4 border">
-					<p className="flex items-center gap-1 ">
+					<p className="flex flex-col sm:flex-row items-center gap-1 ">
 						Learn more about{" "}
 						<Link
 							href="https://vercel.com/docs/environment-variables"

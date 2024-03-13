@@ -163,7 +163,11 @@ export const ConfigureProjectCard = ({
 							<Accordion type="multiple" className="border rounded-lg">
 								{/* build and output inputs */}
 								<AccordionItem value="buildAndOutputInputs" className="px-4">
-									<AccordionTrigger>Build and Output Settings</AccordionTrigger>
+									<AccordionTrigger>
+										<p className="w-full text-left">
+											Build and Output Settings
+										</p>
+									</AccordionTrigger>
 									<AccordionContent className="flex flex-col gap-6 mt-4">
 										{/* buildCmd input */}
 										<div className="flex gap-4">
@@ -277,7 +281,9 @@ export const ConfigureProjectCard = ({
 
 								{/* envVars */}
 								<AccordionItem value="envVarsInput" className="px-4">
-									<AccordionTrigger>Environment Variables</AccordionTrigger>
+									<AccordionTrigger>
+										<p className="w-full text-left">Environment Variables</p>
+									</AccordionTrigger>
 									<AccordionContent className="mt-4">
 										<div className="flex flex-col gap-8">
 											{/* envVars add input */}

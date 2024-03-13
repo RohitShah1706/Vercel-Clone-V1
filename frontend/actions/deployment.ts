@@ -1,14 +1,16 @@
 "use server";
 
-import { AxiosError } from "axios";
+import axios, { AxiosError } from "axios";
 
-import { Project, UpdateProjectRequestBody } from "@/app/types";
+import { Deployment, DeploymentStatus } from "@/app/types";
 import { getSession } from "./session";
 import { getAxiosInstance } from "./axios";
 
 const NEXT_PUBLIC_BACKEND_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_BASE_URL;
 
-export const getUserProjects = async (): Promise<Project[]> => {
+export const getDeployments = async (
+	projectId: string
+): Promise<Deployment[]> => {
 	const session = await getSession();
 
 	if (!session) {
@@ -17,7 +19,7 @@ export const getUserProjects = async (): Promise<Project[]> => {
 
 	try {
 		const axiosInstance = getAxiosInstance(session.accessToken as string);
-		const response = await axiosInstance.get("/projects");
+		const response = await axiosInstance.get(`/deployments/all/${projectId}`);
 
 		return response.data;
 	} catch (error: unknown) {
@@ -30,7 +32,35 @@ export const getUserProjects = async (): Promise<Project[]> => {
 	}
 };
 
-export const getProjectById = async (id: string): Promise<Project | null> => {
+export const getDeploymentStatus = async (
+	deploymentId: string
+): Promise<DeploymentStatus> => {
+	const session = await getSession();
+
+	if (!session) {
+		return DeploymentStatus.FAILED;
+	}
+
+	try {
+		const axiosInstance = getAxiosInstance(session.accessToken as string);
+		const response = await axiosInstance.get(
+			`/deployments/status?id=${deploymentId}`
+		);
+
+		return response.data;
+	} catch (error: unknown) {
+		const axiosError = error as AxiosError;
+		if (axiosError.response && axiosError.response.status === 404) {
+			return DeploymentStatus.FAILED;
+		}
+
+		return DeploymentStatus.FAILED;
+	}
+};
+
+export const getDeploymentInfo = async (
+	deploymentId: string
+): Promise<Deployment | null> => {
 	const session = await getSession();
 
 	if (!session) {
@@ -39,7 +69,7 @@ export const getProjectById = async (id: string): Promise<Project | null> => {
 
 	try {
 		const axiosInstance = getAxiosInstance(session.accessToken as string);
-		const response = await axiosInstance.get(`/projects/${id}`);
+		const response = await axiosInstance.get(`/deployments/${deploymentId}`);
 
 		return response.data;
 	} catch (error: unknown) {
@@ -52,48 +82,33 @@ export const getProjectById = async (id: string): Promise<Project | null> => {
 	}
 };
 
-export const createProject = async (
-	project: Project
-): Promise<Project | null> => {
+export const createDeployment = async ({
+	commitId,
+	branch,
+	projectId,
+}: {
+	commitId: string;
+	branch: string;
+	projectId: string;
+}): Promise<Deployment | null> => {
 	const session = await getSession();
-
 	if (!session) {
 		return null;
 	}
 
 	try {
 		const axiosInstance = getAxiosInstance(session.accessToken as string);
-		const response = await axiosInstance.post("/projects", project);
+		const response = await axiosInstance.post(`/deployments/deploy`, {
+			projectId,
+			branch,
+			commitId,
+		});
 
 		return response.data;
 	} catch (error: unknown) {
 		const axiosError = error as AxiosError;
 		if (axiosError.response && axiosError.response.status === 404) {
-			console.log("error", axiosError.response.data);
-		}
-		return null;
-	}
-};
-
-export const updateProjectDetails = async (
-	projectId: string,
-	project: UpdateProjectRequestBody
-): Promise<Project | null> => {
-	const session = await getSession();
-
-	if (!session) {
-		return null;
-	}
-
-	try {
-		const axiosInstance = getAxiosInstance(session.accessToken as string);
-		const response = await axiosInstance.put(`/projects/${projectId}`, project);
-
-		return response.data;
-	} catch (error: unknown) {
-		const axiosError = error as AxiosError;
-		if (axiosError.response && axiosError.response.status === 404) {
-			console.log("error", axiosError.response.data);
+			return null;
 		}
 		return null;
 	}

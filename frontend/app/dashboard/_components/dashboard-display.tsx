@@ -16,7 +16,7 @@ import { Project } from "@/app/types";
 import { useEffect, useState } from "react";
 import { ProjectsTable } from "./projects-table";
 import { ProjectsGrid } from "./projects-grid";
-import { columns } from "./project-columns";
+import { projectColumns } from "./project-columns";
 
 export const DashboardDisplay = ({ projects }: { projects: Project[] }) => {
 	const [search, setSearch] = useState("");
@@ -112,7 +112,7 @@ export const DashboardDisplay = ({ projects }: { projects: Project[] }) => {
 			{/* ! DISPLAY PROJECTS */}
 			<div className="hidden md:block">
 				{view === "table" && (
-					<ProjectsTable columns={columns} data={displayProducts} />
+					<ProjectsTable columns={projectColumns} data={displayProducts} />
 				)}
 				{view === "grid" && <ProjectsGrid projects={displayProducts} />}
 			</div>

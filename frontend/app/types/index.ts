@@ -33,6 +33,10 @@ export interface Project {
 
 export type RepositoryVisibility = "all" | "private" | "public";
 
+export interface LogEvent {
+	log: string;
+}
+
 export interface Repository {
 	name: string;
 	full_name: string;
@@ -41,6 +45,18 @@ export interface Repository {
 	visibility: RepositoryVisibility;
 	default_branch: string;
 	last_commit_id: string;
+}
+
+export interface Deployment {
+	id: string;
+	branch: string;
+	commitId: string;
+	status: DeploymentStatus;
+	createdAt: Date;
+	logEvent?: LogEvent[];
+	githubProjectName?: string;
+	isActive?: boolean;
+	projectId?: string;
 }
 
 export interface UpdateProjectRequestBody {

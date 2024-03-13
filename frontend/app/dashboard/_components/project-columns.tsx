@@ -8,7 +8,7 @@ import Link from "next/link";
 
 import { Project } from "@/app/types";
 
-export const columns: ColumnDef<Project>[] = [
+export const projectColumns: ColumnDef<Project>[] = [
 	{
 		header: "Name",
 		cell: ({ row }) => {

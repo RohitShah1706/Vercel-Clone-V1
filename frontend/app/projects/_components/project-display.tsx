@@ -3,7 +3,7 @@
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 
-import { Project } from "@/app/types";
+import { Deployment, Project } from "@/app/types";
 import { useState } from "react";
 import { SelectActiveTab } from "./select-activetab";
 import Link from "next/link";
@@ -11,7 +11,13 @@ import { ProjectTabSection } from "./project/project-tab-section";
 import { DeploymentsTabSection } from "./deployments/deployments-tab-sections";
 import { SettingsTabSection } from "./settings/settings-tab-section";
 
-export const ProjectDisplay = ({ project }: { project: Project }) => {
+export const ProjectDisplay = ({
+	project,
+	deployments,
+}: {
+	project: Project;
+	deployments: Deployment[];
+}) => {
 	const [activeTab, setActiveTab] = useState<
 		"project" | "deployments" | "settings"
 	>("project");
@@ -89,7 +95,7 @@ export const ProjectDisplay = ({ project }: { project: Project }) => {
 				<ProjectTabSection project={displayProject} />
 			)}
 			{activeTab === "deployments" && (
-				<DeploymentsTabSection project={displayProject} />
+				<DeploymentsTabSection project={displayProject} deployments={deployments}/>
 			)}
 			{activeTab === "settings" && (
 				<SettingsTabSection

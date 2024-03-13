@@ -21,6 +21,11 @@ const publisher = getRedisClient();
 app.use(cors());
 app.use(express.json());
 
+app.use((req, res, next) => {
+	console.log(`${new Date().toISOString()} - ${req.method} ${req.originalUrl}`);
+	next();
+});
+
 // ! routers
 app.use("/repos", require("./routers/repoRouter").default);
 app.use("/users", require("./routers/userRouter").default);

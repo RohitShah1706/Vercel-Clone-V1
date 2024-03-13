@@ -114,7 +114,7 @@ export const SettingsGeneralTab = ({
 					/>
 				</CardContent>
 				<CardFooter className="text-sm bg-[#FAFAFA] dark:bg-[#0B0B0A] py-3 flex flex-col sm:flex-row items-center justify-between gap-4 border">
-					<p className="flex items-center gap-1">
+					<p className="flex flex-col sm:flex-row items-center gap-1">
 						Learn more about{" "}
 						<Link
 							href="https://vercel.com/docs/projects/overview#project-name"
@@ -160,7 +160,10 @@ export const SettingsGeneralTab = ({
 											<FormItem className="px-1">
 												<FormLabel>Build Command</FormLabel>
 												<FormControl>
-													<Input placeholder="npm run build" {...field} />
+													<Input
+														placeholder={project.buildCmd || "npm run build"}
+														{...field}
+													/>
 												</FormControl>
 												<FormMessage />
 											</FormItem>
@@ -194,7 +197,10 @@ export const SettingsGeneralTab = ({
 											<FormItem className="px-1">
 												<FormLabel>Output Directory</FormLabel>
 												<FormControl>
-													<Input placeholder="dist" {...field} />
+													<Input
+														placeholder={project.outDir || "dist"}
+														{...field}
+													/>
 												</FormControl>
 												<FormMessage />
 											</FormItem>
@@ -228,7 +234,10 @@ export const SettingsGeneralTab = ({
 											<FormItem className="px-1">
 												<FormLabel>Install Command</FormLabel>
 												<FormControl>
-													<Input placeholder="npm install" {...field} />
+													<Input
+														placeholder={project.installCmd || "npm install"}
+														{...field}
+													/>
 												</FormControl>
 												<FormMessage />
 											</FormItem>
@@ -252,7 +261,7 @@ export const SettingsGeneralTab = ({
 							</div>
 						</CardContent>
 						<CardFooter className="text-sm bg-[#FAFAFA] dark:bg-[#0B0B0A] py-3 flex flex-col sm:flex-row items-center justify-between gap-4 border">
-							<p className="flex items-center gap-1">
+							<p className="flex flex-col sm:flex-row items-center gap-1">
 								Learn more about{" "}
 								<Link
 									href="https://vercel.com/docs/deployments/configure-a-build#build-and-development-settings"

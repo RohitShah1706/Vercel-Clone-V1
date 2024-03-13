@@ -42,7 +42,7 @@ model Deployment {
   project           Project          @relation(name: "ProjectDeployments", fields: [projectId], references: [id])
   associatedProject Project?         @relation("LastDeployment")
 
-  LogEvent LogEvent[]
+  logEvent LogEvent[]
 }
 
 model EnvVar {

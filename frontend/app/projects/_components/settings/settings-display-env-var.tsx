@@ -46,7 +46,7 @@ export const SettingsDisplayEnvVar = ({
 
 	return (
 		<div className="flex gap-4 items-center w-full">
-			<div className="w-full sm:w-[92%] flex gap-2">
+			<div className="w-[82%] sm:w-[92%] flex gap-2">
 				<div className="w-full border rounded-md bg-[#FCFDFD] dark:bg-[#050505] flex items-center">
 					<p className="text-sm text-muted-foreground px-3">{envVarKey}</p>
 				</div>
@@ -134,7 +134,7 @@ export const SettingsDisplayEnvVar = ({
 			<Button
 				type="button"
 				variant="secondary"
-				className="px-4"
+				className="sm:px-4"
 				onClick={() => {
 					handleRemoveEnvVar(envVarKey);
 				}}

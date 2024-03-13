@@ -37,7 +37,6 @@ export default function NewProjectPage() {
 	return (
 		<div className="container max-w-3xl lg:max-w-5xl flex flex-col">
 			<div className="mt-16 mb-16">
-				<div className="container"></div>
 				<h1 className="text-[40px] font-bold mb-2 leading-[50px]">{`Let's build something new.`}</h1>
 				<p className="text-gray-600 dark:text-gray-300">
 					To deploy a new Project, import an existing Git Repository from your

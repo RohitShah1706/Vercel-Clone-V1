@@ -387,49 +387,7 @@ sudo certbot --nginx
 
 ---
 
-## Errors faced
-
-### Have to use `Promise.all` to wait for all files to be uploaded to S3 before pushing to Redis queue
-
-In the below code seems like all files will first be uploaded to the S3 bucket and then the id will be pushed to the redis queue. But the problem is that the `forEach` does not wait for promises. So even though we're using `await` inside `forEach` callback, it only make the callback itself asynchronous, not the `forEach` loop, meaning `console.log` after `uploadFile` will be executed only when that particular file is uploaded to S3, but `publisher.lPush` will be executed immediately after the `forEach` loop is finished.
-
-**Problem**:
-
-```javascript
-files.forEach(async (file) => {
-	await uploadFile(file.slice(__dirname.length + 1), file);
-	// console.log(`File ${file} uploaded to S3`);
-});
-
-// ! put the id on the redis "build-queue" for deploy-service to consume
-publisher.lPush("build-queue", id);
-```
-
-**Solution**:
-
-```javascript
-await Promise.all(
-	files.map((file) => {
-		return uploadFile(file.slice(__dirname.length + 1), file);
-	})
-);
-
-// Now all files have been uploaded, so we can push to the Redis queue
-publisher.lPush("build-queue", id);
-```
-
-### Have to use hostname/<id> instead of id.hostname.com
-
-<!-- ! all this cuz we don't have our domain name -->
-
-To update in dist after build is done
-Add /fcd2d166fac040b6aca85c0df529b5bd or /<id> before keyword
-
-1. INDEX.HTML FILE "/assets/" -> "/fcd2d166fac040b6aca85c0df529b5bd/assets/"
-2. INDEX.HTML FILE "/assets/" -> "/fcd2d166fac040b6aca85c0df529b5bd/assets/"
-3. ASSETS/\*.JS FILE "/assets/" -> "/<id>/assets/"
-
-### Downloading files from S3 in Chunks
+## Downloading files from S3 in Chunks
 
 **Reference**: [Upload or download large files to and from Amazon S3 using an AWS SDK](https://docs.aws.amazon.com/AmazonS3/latest/userguide/example_s3_Scenario_UsingLargeFiles_section.html)
 
@@ -442,70 +400,6 @@ Breaking down a large file into smaller pieces, or _chunking_, has several benef
 3. **Lower memory usage**: When downloading a file in one piece, the entire file needs to be held in memory, which can be a problem for large files. By downloading in chunks, we only need to hold one chunk in memory at a time.
 
 **NOTE**: Checkout `deploy-service/src/downloadInChunks.ts` for implementation.
-
----
-
-## Todos
-
-### Rotate SECRET_KEY
-
-**Possible implementation**:
-
-```javascript
-const mongoClient = require("mongodb").MongoClient;
-const url = "mongodb://localhost:27017";
-const dbName = "myproject";
-
-// Connect to MongoDB
-mongoClient.connect(url, function (err, client) {
-	const db = client.db(dbName);
-	const collection = db.collection("envVars");
-
-	// Retrieve all envVars
-	collection.find({}).toArray(function (err, docs) {
-		docs.forEach((doc) => {
-			// Decrypt envVars using old key
-			const decrypted = decrypt(doc.envVars, oldKey);
-
-			// Encrypt envVars using new key
-			const encrypted = encrypt(decrypted, newKey);
-
-			// Update envVars in MongoDB
-			collection.updateOne({ _id: doc._id }, { $set: { envVars: encrypted } });
-		});
-	});
-
-	client.close();
-});
-```
-
-### Maintain common files for different services in a separate folder
-
-Those files include:
-
-- `src/config/index.ts`
-- `src/connection/*`
-- `src/controllers/*`
-- `src/models/*`
-- `src/cryptoUtis.ts`
-- `src/file.ts`
-
-TODO: remove boilerplate code of prisma catching error & other stuff from project
-TODO: use rootDir while building the project
-TODO: build a Github app to install on user's repositories directly: https://medium.com/swlh/building-the-first-github-app-3ea67a76c19a
-TODO: shift to using projectId instead of deploymentId while storing in S3
-TODO: document why used Apache Kafka over RabbitMQ
-Resources:
-
-1.  https://www.youtube.com/watch?v=Ch5VhJzaoaI
-2.  https://www.youtube.com/watch?v=UNUz1-msbOM
-
-TODO: see how to create hooks using Octokit
-TODO: use redis only as caching layer: remove publish tasks & status onto queue
-TODO: add getOrSetCache function & use redis as caching: for /status of "upload-server"
-TODO: document why to use clickhouse - fast open-source OLAP database management system for real-time push of build logs from "deploy-service"
-TODO: use polling on frontend to get build logs from "upload-service" (which will get from clickhouse) & display in real-time
-TODO: create frontend basic template
 
 ---
 
@@ -537,5 +431,11 @@ TODO: create frontend basic template
 11. [Next.js Server Actions & 5 awesome things you can do](https://www.youtube.com/watch?v=O94ESaJtHtM)
 
 12. [Node Typescript Project Dockerfile](https://www.emmanuelgautier.com/blog/snippets/typescript-dockerfile)
+
+13. Apache Kafka:
+
+    - [Apache Kafka in 6 minutes](https://www.youtube.com/watch?v=Ch5VhJzaoaI)
+
+    - [System Design: Why is Kafka fast?](https://www.youtube.com/watch?v=UNUz1-msbOM)
 
 ---

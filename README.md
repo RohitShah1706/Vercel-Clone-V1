@@ -1,39 +1,41 @@
-## Use commitlint to adhere to a commit convention.
+# Vercel Clone V1
 
-[Guild: Local Setup with commitlint](https://commitlint.js.org/#/guides-local-setup?id=install-commitlint)
+This project is a platform designed to enable seamless deployment of frontend applications across various JavaScript frameworks and libraries. It provides users with a streamlined deployment process, integrating directly with GitHub repositories for effortless deployment with a single click. The project employs containerized deployment strategies and leverages AWS S3 with CloudFront to achieve exceptional performance, reducing latency by up to 90%. The system employs an asynchronous architecture for efficient deployment task queuing and processing, ensuring scalability and reliability. Additionally, it utilizes Kafka for real-time streaming of build logs, ensuring efficient and scalable deployment processes.
 
-1. Install commitlint
+---
 
-```powershell
-# Install and configure commitlint cli
-npm install --save-dev @commitlint/config-conventional @commitlint/cli
+## Architecture
 
-# Create & add this to commitlint.config.js file
-module.exports = { extends: ['@commitlint/config-conventional'] };
-```
+**Upload-Service**:
 
-2. Install husky
+- Clones GitHub Repositories.
+- Uploads source code to AWS S3.
+- Triggers build tasks via Kafka.
 
-```powershell
-# Install Husky v6
-npm install husky --save-dev
+**Deploy-Service**:
 
-# Activate hooks
-npx husky install
-```
+- Consumes build tasks from Kafka.
+- Executes builds and deploys to AWS S3.
+- Streams build logs via Kafka.
 
-3. Add hook
+**Frontend**:
 
-```powershell
-npm pkg set scripts.commitlint="commitlint --edit"
-npx husky add .husky/commit-msg 'npm run commitlint ${1}'
-```
+- Notifies users of build status.
+- Routes requests through AWS CloudFront for low-latency delivery.
 
-4. Commit with this convention: [Commit lint conventions](https://github.com/conventional-changelog/commitlint?tab=readme-ov-file#what-is-commitlint)
+---
 
-```powershell
-git commit -m "chore: lint on commitmsg"
-```
+## Technologies Used
+
+1. [TypeScript](https://www.typescriptlang.org/)
+2. [Express JS](https://expressjs.com/)
+3. [Next JS](https://nextjs.org/)
+4. [PostgreSQL](https://www.postgresql.org/)
+5. [Prisma](https://www.prisma.io/)
+6. [Docker](https://www.docker.com/)
+7. [Redis](https://redis.io/)
+8. [Kafka](https://kafka.apache.org/)
+9. AWS services (S3, CloudFront)
 
 ---
 

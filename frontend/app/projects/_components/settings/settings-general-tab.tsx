@@ -38,11 +38,6 @@ export const SettingsGeneralTab = ({
 }) => {
 	const [projectName, setProjectName] = useState<string>(project.name || "");
 	const [isLoading, setIsLoading] = useState(false);
-	const [editMode, setEditMode] = useState({
-		buildCmd: false,
-		outDir: false,
-		installCmd: false,
-	});
 
 	const form = useForm<z.infer<typeof formSchema>>({
 		resolver: zodResolver(formSchema),

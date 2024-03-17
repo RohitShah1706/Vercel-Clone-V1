@@ -2,7 +2,7 @@
 
 import { AxiosError } from "axios";
 
-import { Project, UpdateProjectRequestBody } from "@/app/types";
+import { Project, UpdateProjectRequestBody } from "@/types";
 import { getSession } from "./session";
 import { getAxiosInstance } from "./axios";
 

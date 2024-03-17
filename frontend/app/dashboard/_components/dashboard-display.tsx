@@ -12,7 +12,7 @@ import { GridIcon, PlusIcon, RowsIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-import { Project } from "@/app/types";
+import { Project } from "@/types";
 import { useEffect, useState } from "react";
 import { ProjectsTable } from "./projects-table";
 import { ProjectsGrid } from "./projects-grid";

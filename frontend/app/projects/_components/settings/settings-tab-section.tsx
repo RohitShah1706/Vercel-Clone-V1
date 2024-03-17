@@ -1,4 +1,4 @@
-import { Project } from "@/app/types";
+import { Project } from "@/types";
 import { Separator } from "@/components/ui/separator";
 import { SettingsSidebarNav } from "./settings-sidebar-nav";
 import { useState } from "react";

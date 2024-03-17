@@ -58,10 +58,10 @@ export const ImportSideDetails = ({
 			</div>
 
 			<hr className="border-t mr-16" />
-			<a href="" className="flex items-center gap-2">
+			<Link href="/new" className="flex items-center gap-2">
 				Import a different Git Repository
 				<ArrowRight className="w-4 h-4" />
-			</a>
+			</Link>
 		</div>
 	);
 };

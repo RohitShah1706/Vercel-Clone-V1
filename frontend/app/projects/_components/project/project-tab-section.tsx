@@ -1,9 +1,10 @@
 import { Card, CardContent } from "@/components/ui/card";
 
-import { DeploymentStatus, Project } from "@/app/types";
+import { DeploymentStatus, Project } from "@/types";
 import Link from "next/link";
 import { GitBranch, GitCommitHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { DisplayDeploymentStatus } from "@/components/custom/display-deployment-status";
 
 export const ProjectTabSection = ({ project }: { project: Project }) => {
 	return (
@@ -32,25 +33,9 @@ export const ProjectTabSection = ({ project }: { project: Project }) => {
 					<div className="flex flex-col gap-1">
 						<p className="text-sm text-[#666666] dark:text-[#A1A1A1]">Status</p>
 						{project.lastDeployment ? (
-							project.lastDeployment.status === DeploymentStatus.FAILED ? (
-								<p className="text-sm font-[500] flex items-center gap-2">
-									<span className="inline-block h-3 w-3 rounded-full bg-[#f87171]"></span>
-									{project.lastDeployment.status}
-								</p>
-							) : 
-							project.lastDeployment.status ===
-									DeploymentStatus.DEPLOYING ||
-							  project.lastDeployment.status === DeploymentStatus.QUEUED ? (
-								<p className="text-sm font-[500] flex items-center gap-2">
-									<span className="inline-block h-3 w-3 rounded-full bg-[#f6bc3f]"></span>
-									{project.lastDeployment.status}
-								</p>
-							) : (
-								<p className="text-sm font-[500] flex items-center gap-2">
-									<span className="inline-block h-3 w-3 rounded-full bg-[#50e3c2]"></span>
-									{project.lastDeployment.status}
-								</p>
-							)
+							<DisplayDeploymentStatus
+								deploymentStatus={project.lastDeployment.status}
+							/>
 						) : (
 							<p>No deployments</p>
 						)}

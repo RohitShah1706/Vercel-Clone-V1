@@ -2,7 +2,7 @@
 
 import { AxiosError } from "axios";
 
-import { Repository, RepositoryVisibility } from "@/app/types";
+import { Repository, RepositoryVisibility } from "@/types";
 import { getSession } from "./session";
 import { getAxiosInstance } from "./axios";
 

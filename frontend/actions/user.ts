@@ -2,7 +2,7 @@
 
 import { AxiosError } from "axios";
 
-import { User } from "@/app/types";
+import { User } from "@/types";
 import { getSession } from "./session";
 import { getAxiosInstance } from "./axios";
 

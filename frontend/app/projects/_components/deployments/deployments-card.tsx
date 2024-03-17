@@ -1,8 +1,9 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { Deployment, DeploymentStatus } from "@/app/types";
+import { Deployment, DeploymentStatus } from "@/types";
 import Link from "next/link";
 import { GitBranch, GitCommitHorizontal } from "lucide-react";
 import { formatRelative } from "date-fns";
+import { DisplayDeploymentStatus } from "@/components/custom/display-deployment-status";
 
 export const DeploymentsCard = ({ deployment }: { deployment: Deployment }) => {
 	return (
@@ -21,23 +22,7 @@ export const DeploymentsCard = ({ deployment }: { deployment: Deployment }) => {
 				</div>
 				<hr className="border-t" />
 				<div>
-					{deployment.status === DeploymentStatus.FAILED ? (
-						<p className="text-sm font-[500] flex items-center gap-2">
-							<span className="inline-block h-3 w-3 rounded-full bg-[#f87171]"></span>
-							{deployment.status}
-						</p>
-					) : deployment.status === DeploymentStatus.DEPLOYING ||
-					  deployment.status === DeploymentStatus.QUEUED ? (
-						<p className="text-sm font-[500] flex items-center gap-2">
-							<span className="inline-block h-3 w-3 rounded-full bg-[#f6bc3f]"></span>
-							{deployment.status}
-						</p>
-					) : (
-						<p className="text-sm font-[500] flex items-center gap-2">
-							<span className="inline-block h-3 w-3 rounded-full bg-[#50e3c2]"></span>
-							{deployment.status}
-						</p>
-					)}
+					<DisplayDeploymentStatus deploymentStatus={deployment.status} />
 				</div>
 				<hr className="border-t" />
 				<div className="flex flex-col gap-1">

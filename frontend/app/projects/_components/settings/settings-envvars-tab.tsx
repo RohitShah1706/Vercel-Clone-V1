@@ -1,6 +1,6 @@
 "use client";
 
-import { Project } from "@/app/types";
+import { Project } from "@/types";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -10,8 +10,6 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { ExternalLink } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
@@ -19,6 +17,7 @@ import { SettingsDisplayEnvVar } from "./settings-display-env-var";
 import { Dispatch, SetStateAction } from "react";
 import { addEnvVar, removeEnvVar } from "@/actions/envvars";
 import { useToast } from "@/components/ui/use-toast";
+import { EnvVarsAddInput } from "@/components/custom/envvars-add-input";
 
 export const SettingsEnvvarsTab = ({
 	project,
@@ -107,60 +106,14 @@ export const SettingsEnvvarsTab = ({
 				<CardContent>
 					<div className="flex flex-col gap-8">
 						{/* envVars add input */}
-						<div className="flex flex-col items-center gap-6">
-							<div className="flex gap-4 items-center w-full">
-								<div className="w-full sm:w-[90%] flex gap-2">
-									<div className="w-full flex flex-col gap-2">
-										<Label htmlFor="envVarKey">Key</Label>
-										<Input
-											type="text"
-											id="envVarKey"
-											placeholder="EXAMPLE_NAME"
-											className="w-full"
-											value={newKey}
-											onChange={(e) => setNewKey(e.target.value)}
-										/>
-									</div>
-
-									<div className="w-full flex flex-col gap-2">
-										<Label htmlFor="envVarValue">
-											<p className="hidden sm:block">
-												Value (Will Be Encrypted)
-											</p>
-											<p className="block sm:hidden">Value</p>
-										</Label>
-										<Input
-											type="text"
-											id="envVarValue"
-											placeholder="I9JU23NF39R6HH"
-											className="w-full"
-											value={newValue}
-											onChange={(e) => setNewValue(e.target.value)}
-										/>
-									</div>
-								</div>
-								<div className="hidden sm:block mt-[19.1px]">
-									<Button
-										type="button"
-										variant="secondary"
-										className="px-5"
-										onClick={handleAddEnvVar}
-										disabled={isLoading}
-									>
-										Add
-									</Button>
-								</div>
-							</div>
-							<Button
-								type="button"
-								variant="secondary"
-								className="block sm:hidden w-full"
-								onClick={handleAddEnvVar}
-								disabled={isLoading}
-							>
-								Add
-							</Button>
-						</div>
+						<EnvVarsAddInput
+							newKey={newKey}
+							setNewKey={setNewKey}
+							newValue={newValue}
+							setNewValue={setNewValue}
+							handleAddEnvVar={handleAddEnvVar}
+							isLoading={isLoading}
+						/>
 
 						{/* envVars display */}
 						<div className="flex flex-col items-center gap-2">
@@ -189,7 +142,6 @@ export const SettingsEnvvarsTab = ({
 							Environment Variables <ExternalLink className="w-4 h-4" />
 						</Link>
 					</p>
-					{/* <Button onClick={updateProjectName}>Save</Button> */}
 				</CardFooter>
 			</Card>
 		</div>

@@ -10,7 +10,7 @@ import {
 
 import { getRepositories } from "@/actions/repo";
 import { useEffect, useState } from "react";
-import { Repository, RepositoryVisibility } from "../types";
+import { Repository, RepositoryVisibility } from "@/types";
 import { Input } from "@/components/ui/input";
 import { SkeletonCard } from "./_components/skeleton-card";
 import { RepoCard } from "./_components/repo-cards";

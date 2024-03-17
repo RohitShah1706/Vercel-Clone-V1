@@ -1,6 +1,6 @@
 "use client";
 
-import { Project, UpdateProjectRequestBody } from "@/app/types";
+import { Project, UpdateProjectRequestBody } from "@/types";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -10,25 +10,18 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import {
-	Form,
-	FormControl,
-	FormField,
-	FormItem,
-	FormLabel,
-	FormMessage,
-} from "@/components/ui/form";
+import { Form } from "@/components/ui/form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
 import { useState } from "react";
 import { ExternalLink } from "lucide-react";
 import Link from "next/link";
 import { Dispatch, SetStateAction } from "react";
 import { updateProjectDetails } from "@/actions/project";
 import { Spinner } from "@/components/custom/spinner";
+import { FormInputWithOverride } from "@/components/custom/form-input-with-override";
 
 const formSchema = z.object({
 	outDir: z.string().optional(),
@@ -76,8 +69,8 @@ export const SettingsGeneralTab = ({
 	};
 
 	const onSubmit = async (values: z.infer<typeof formSchema>) => {
-		setIsLoading(true);
 		const newProjectDetails: UpdateProjectRequestBody = values;
+		setIsLoading(true);
 		const response = await updateProjectDetails(
 			project.id as string,
 			newProjectDetails
@@ -150,115 +143,28 @@ export const SettingsGeneralTab = ({
 						</CardHeader>
 						<CardContent className="flex flex-col gap-6">
 							{/* buildCmd input */}
-							<div className="flex gap-4">
-								<div className="w-full">
-									<FormField
-										disabled={!editMode.buildCmd}
-										control={form.control}
-										name="buildCmd"
-										render={({ field }) => (
-											<FormItem className="px-1">
-												<FormLabel>Build Command</FormLabel>
-												<FormControl>
-													<Input
-														placeholder={project.buildCmd || "npm run build"}
-														{...field}
-													/>
-												</FormControl>
-												<FormMessage />
-											</FormItem>
-										)}
-									/>
-								</div>
-
-								<div className="flex items-center gap-2 mt-7">
-									<p className="text-sm font-[500] hidden sm:block">OVERRIDE</p>
-									<Switch
-										checked={editMode.buildCmd}
-										onCheckedChange={(checked) => {
-											setEditMode((prev) => ({
-												...prev,
-												buildCmd: checked,
-											}));
-										}}
-										aria-readonly
-									/>
-								</div>
-							</div>
+							<FormInputWithOverride
+								form={form}
+								name="buildCmd"
+								label="Build Command"
+								placeholder={project.buildCmd || "npm run build"}
+							/>
 
 							{/* outDir input */}
-							<div className="flex gap-4">
-								<div className="w-full">
-									<FormField
-										disabled={!editMode.outDir}
-										control={form.control}
-										name="outDir"
-										render={({ field }) => (
-											<FormItem className="px-1">
-												<FormLabel>Output Directory</FormLabel>
-												<FormControl>
-													<Input
-														placeholder={project.outDir || "dist"}
-														{...field}
-													/>
-												</FormControl>
-												<FormMessage />
-											</FormItem>
-										)}
-									/>
-								</div>
-
-								<div className="flex items-center gap-2 mt-7">
-									<p className="text-sm font-[500] hidden sm:block">OVERRIDE</p>
-									<Switch
-										checked={editMode.outDir}
-										onCheckedChange={(checked) => {
-											setEditMode((prev) => ({
-												...prev,
-												outDir: checked,
-											}));
-										}}
-										aria-readonly
-									/>
-								</div>
-							</div>
+							<FormInputWithOverride
+								form={form}
+								name="outDir"
+								label="Output Directory"
+								placeholder={project.outDir || "dist"}
+							/>
 
 							{/* installCmd input */}
-							<div className="flex gap-4">
-								<div className="w-full">
-									<FormField
-										disabled={!editMode.installCmd}
-										control={form.control}
-										name="installCmd"
-										render={({ field }) => (
-											<FormItem className="px-1">
-												<FormLabel>Install Command</FormLabel>
-												<FormControl>
-													<Input
-														placeholder={project.installCmd || "npm install"}
-														{...field}
-													/>
-												</FormControl>
-												<FormMessage />
-											</FormItem>
-										)}
-									/>
-								</div>
-
-								<div className="flex items-center gap-2 mt-7">
-									<p className="text-sm font-[500] hidden sm:block">OVERRIDE</p>
-									<Switch
-										checked={editMode.installCmd}
-										onCheckedChange={(checked) => {
-											setEditMode((prev) => ({
-												...prev,
-												installCmd: checked,
-											}));
-										}}
-										aria-readonly
-									/>
-								</div>
-							</div>
+							<FormInputWithOverride
+								form={form}
+								name="installCmd"
+								label="Install Command"
+								placeholder={project.installCmd || "npm install"}
+							/>
 						</CardContent>
 						<CardFooter className="text-sm bg-[#FAFAFA] dark:bg-[#0B0B0A] py-3 flex flex-col sm:flex-row items-center justify-between gap-4 border">
 							<p className="flex flex-col sm:flex-row items-center gap-1">

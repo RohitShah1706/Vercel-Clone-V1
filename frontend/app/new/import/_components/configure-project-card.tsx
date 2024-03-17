@@ -24,11 +24,13 @@ import {
 	FormMessage,
 } from "@/components/ui/form";
 import { DisplayEnvVar } from "./display-envvar";
-import { Project } from "@/app/types";
+import { Project } from "@/types";
 import { createProject } from "@/actions/project";
 import { Spinner } from "@/components/custom/spinner";
 import { useToast } from "@/components/ui/use-toast";
 import { useRouter } from "next/navigation";
+import { FormInputWithOverride } from "@/components/custom/form-input-with-override";
+import { EnvVarsAddInput } from "@/components/custom/envvars-add-input";
 
 const formSchema = z.object({
 	name: z.string().min(1, "Project Name is required"),
@@ -52,16 +54,12 @@ export const ConfigureProjectCard = ({
 
 	const [newKey, setNewKey] = useState("");
 	const [newValue, setNewValue] = useState("");
-	const [editMode, setEditMode] = useState({
-		buildCmd: false,
-		outDir: false,
-		installCmd: false,
-	});
+
 	const [loading, setLoading] = useState(false);
 
 	const [envVars, setEnvVars] = useState<Record<string, string>>({});
 
-	const handleAddEnvVar = () => {
+	const handleAddEnvVar = async () => {
 		const updatedEnvVars = { ...envVars, [newKey]: newValue };
 		setEnvVars(updatedEnvVars);
 		form.setValue("envVars", updatedEnvVars, { shouldValidate: true });
@@ -170,112 +168,28 @@ export const ConfigureProjectCard = ({
 									</AccordionTrigger>
 									<AccordionContent className="flex flex-col gap-6 mt-4">
 										{/* buildCmd input */}
-										<div className="flex gap-4">
-											<div className="w-full">
-												<FormField
-													disabled={!editMode.buildCmd}
-													control={form.control}
-													name="buildCmd"
-													render={({ field }) => (
-														<FormItem className="px-1">
-															<FormLabel>Build Command</FormLabel>
-															<FormControl>
-																<Input placeholder="npm run build" {...field} />
-															</FormControl>
-															<FormMessage />
-														</FormItem>
-													)}
-												/>
-											</div>
-
-											<div className="flex items-center gap-2 mt-6">
-												<p className="text-sm font-[500] hidden sm:block">
-													OVERRIDE
-												</p>
-												<Switch
-													checked={editMode.buildCmd}
-													onCheckedChange={(checked) => {
-														setEditMode((prev) => ({
-															...prev,
-															buildCmd: checked,
-														}));
-													}}
-													aria-readonly
-												/>
-											</div>
-										</div>
+										<FormInputWithOverride
+											form={form}
+											name="buildCmd"
+											label="Build Command"
+											placeholder="npm run build"
+										/>
 
 										{/* outDir input */}
-										<div className="flex gap-4">
-											<div className="w-full">
-												<FormField
-													disabled={!editMode.outDir}
-													control={form.control}
-													name="outDir"
-													render={({ field }) => (
-														<FormItem className="px-1">
-															<FormLabel>Output Directory</FormLabel>
-															<FormControl>
-																<Input placeholder="dist" {...field} />
-															</FormControl>
-															<FormMessage />
-														</FormItem>
-													)}
-												/>
-											</div>
-
-											<div className="flex items-center gap-2 mt-6">
-												<p className="text-sm font-[500] hidden sm:block">
-													OVERRIDE
-												</p>
-												<Switch
-													checked={editMode.outDir}
-													onCheckedChange={(checked) => {
-														setEditMode((prev) => ({
-															...prev,
-															outDir: checked,
-														}));
-													}}
-													aria-readonly
-												/>
-											</div>
-										</div>
+										<FormInputWithOverride
+											form={form}
+											name="outDir"
+											label="Output Directory"
+											placeholder="dist"
+										/>
 
 										{/* installCmd input */}
-										<div className="flex gap-4">
-											<div className="w-full">
-												<FormField
-													disabled={!editMode.installCmd}
-													control={form.control}
-													name="installCmd"
-													render={({ field }) => (
-														<FormItem className="px-1">
-															<FormLabel>Install Command</FormLabel>
-															<FormControl>
-																<Input placeholder="npm install" {...field} />
-															</FormControl>
-															<FormMessage />
-														</FormItem>
-													)}
-												/>
-											</div>
-
-											<div className="flex items-center gap-2 mt-6">
-												<p className="text-sm font-[500] hidden sm:block">
-													OVERRIDE
-												</p>
-												<Switch
-													checked={editMode.installCmd}
-													onCheckedChange={(checked) => {
-														setEditMode((prev) => ({
-															...prev,
-															installCmd: checked,
-														}));
-													}}
-													aria-readonly
-												/>
-											</div>
-										</div>
+										<FormInputWithOverride
+											form={form}
+											name="installCmd"
+											label="Install Command"
+											placeholder="npm install"
+										/>
 									</AccordionContent>
 								</AccordionItem>
 
@@ -287,58 +201,14 @@ export const ConfigureProjectCard = ({
 									<AccordionContent className="mt-4">
 										<div className="flex flex-col gap-8">
 											{/* envVars add input */}
-											<div className="flex flex-col items-center gap-6">
-												<div className="flex gap-4 items-center w-full">
-													<div className="w-full sm:w-[90%] flex gap-2">
-														<div className="w-full flex flex-col gap-2">
-															<Label htmlFor="envVarKey">Key</Label>
-															<Input
-																type="text"
-																id="envVarKey"
-																placeholder="EXAMPLE_NAME"
-																className="w-full"
-																value={newKey}
-																onChange={(e) => setNewKey(e.target.value)}
-															/>
-														</div>
-
-														<div className="w-full flex flex-col gap-2">
-															<Label htmlFor="envVarValue">
-																<p className="hidden sm:block">
-																	Value (Will Be Encrypted)
-																</p>
-																<p className="block sm:hidden">Value</p>
-															</Label>
-															<Input
-																type="text"
-																id="envVarValue"
-																placeholder="I9JU23NF39R6HH"
-																className="w-full"
-																value={newValue}
-																onChange={(e) => setNewValue(e.target.value)}
-															/>
-														</div>
-													</div>
-													<div className="hidden sm:block mt-[19.1px]">
-														<Button
-															type="button"
-															variant="secondary"
-															className="px-5"
-															onClick={handleAddEnvVar}
-														>
-															Add
-														</Button>
-													</div>
-												</div>
-												<Button
-													type="button"
-													variant="secondary"
-													className="block sm:hidden w-full"
-													onClick={handleAddEnvVar}
-												>
-													Add
-												</Button>
-											</div>
+											<EnvVarsAddInput
+												handleAddEnvVar={handleAddEnvVar}
+												isLoading={loading}
+												newKey={newKey}
+												newValue={newValue}
+												setNewKey={setNewKey}
+												setNewValue={setNewValue}
+											/>
 
 											{/* envVars display */}
 											<div className="flex flex-col items-center gap-2">

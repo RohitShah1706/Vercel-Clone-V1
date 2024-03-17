@@ -12,11 +12,12 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { formatRelative } from "date-fns";
 import { Check, GitBranch, GitCommitHorizontal, Globe } from "lucide-react";
 import Link from "next/link";
-import { Deployment, DeploymentStatus } from "@/app/types";
+import { Deployment, DeploymentStatus } from "@/types";
 import { Spinner } from "@/components/custom/spinner";
 import { useEffect, useRef, useState } from "react";
 import { getDeploymentStatus } from "@/actions/deployment";
 import { getDeploymentLogs } from "@/actions/logs";
+import { DisplayDeploymentStatus } from "@/components/custom/display-deployment-status";
 
 export const DeploymentInfoDisplay = ({
 	deploymentInfo,
@@ -34,13 +35,6 @@ export const DeploymentInfoDisplay = ({
 
 	const intervalIds = useRef<NodeJS.Timeout[]>([]);
 	useEffect(() => {
-		// console.log(
-		// 	"status kya hai",
-		// 	displayDeploymentInfo.status,
-		// 	displayDeploymentInfo.status === DeploymentStatus.DEPLOYING ||
-		// 		displayDeploymentInfo.status === DeploymentStatus.QUEUED
-		// );
-		// ! setup polling here
 		if (
 			displayDeploymentInfo.status === DeploymentStatus.DEPLOYING ||
 			displayDeploymentInfo.status === DeploymentStatus.QUEUED
@@ -83,23 +77,7 @@ export const DeploymentInfoDisplay = ({
 			<div className="flex items-center justify-between">
 				<div className="flex flex-col gap-1">
 					<p className="text-sm text-[#666666] dark:text-[#A1A1A1]">Status</p>
-					{displayDeploymentInfo.status === DeploymentStatus.FAILED ? (
-						<p className="text-sm font-[500] flex items-center gap-2">
-							<span className="inline-block h-3 w-3 rounded-full bg-[#f87171]"></span>
-							{displayDeploymentInfo.status}
-						</p>
-					) : displayDeploymentInfo.status === DeploymentStatus.DEPLOYING ||
-					  displayDeploymentInfo.status === DeploymentStatus.QUEUED ? (
-						<p className="text-sm font-[500] flex items-center gap-2">
-							<span className="inline-block h-3 w-3 rounded-full bg-[#f6bc3f]"></span>
-							{displayDeploymentInfo.status}
-						</p>
-					) : (
-						<p className="text-sm font-[500] flex items-center gap-2">
-							<span className="inline-block h-3 w-3 rounded-full bg-[#50e3c2]"></span>
-							{displayDeploymentInfo.status}
-						</p>
-					)}
+					<DisplayDeploymentStatus deploymentStatus={deploymentInfo.status} />
 				</div>
 				<div className="flex flex-col gap-1">
 					<p className="text-sm text-[#666666] dark:text-[#A1A1A1]">

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Project } from "@/app/types";
+import { Project } from "@/types";
 import { GitBranch } from "lucide-react";
 import { formatRelative } from "date-fns";
 import Image from "next/image";

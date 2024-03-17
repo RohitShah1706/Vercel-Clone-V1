@@ -20,7 +20,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { z } from "zod";
 
-import { Project } from "@/app/types";
+import { Project } from "@/types";
 import { Input } from "@/components/ui/input";
 import {
 	Form,

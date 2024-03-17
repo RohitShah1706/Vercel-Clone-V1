@@ -6,7 +6,7 @@ import { GitBranch } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
-import { Project } from "@/app/types";
+import { Project } from "@/types";
 
 export const projectColumns: ColumnDef<Project>[] = [
 	{

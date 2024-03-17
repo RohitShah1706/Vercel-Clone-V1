@@ -1,4 +1,4 @@
-import { Repository } from "@/app/types";
+import { Repository } from "@/types";
 import { Button } from "@/components/ui/button";
 import { formatDate } from "date-fns";
 import { Lock } from "lucide-react";

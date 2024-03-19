@@ -8,6 +8,7 @@ import { Navbar } from "@/components/custom/navbar";
 
 import { getServerSession } from "next-auth";
 import SessionProvider from "@/components/providers/session-provider";
+import { Analytics } from "@vercel/analytics/react";
 import Head from "next/head";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -53,7 +54,10 @@ export default async function RootLayout({
 					>
 						<Navbar />
 						<Toaster />
-						<div className="mt-auto">{children}</div>
+						<div className="mt-auto">
+							<Analytics />
+							{children}
+						</div>
 					</ThemeProvider>
 				</SessionProvider>
 			</body>
